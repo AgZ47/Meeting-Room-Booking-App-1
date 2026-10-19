@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
 import type { CreateRoomDto } from './dto/create-room.dto.js';
 import { roomsTable } from '../../db/index.js';
@@ -9,15 +9,29 @@ import { eq } from 'drizzle-orm';
 export class AdminService {
     constructor(private readonly database: DatabaseService, private readonly jwtService: JwtService){}
 
+    private async verifyAdmin(authHeader: string){
+        const [scheme, token] = authHeader?.split(' ') ?? [];
+        
+        if(!token || scheme !== 'Bearer'){
+            throw new UnauthorizedException("Invalid authorization header");
+        }
+
+        let payload: {role? : string};
+
+        try{
+            payload = await this.jwtService.verifyAsync<{role?: string}>(token);
+        }catch(error){
+            throw new UnauthorizedException("Invalid or expired token");
+        }
+
+        if(payload.role !== 'admin'){
+            throw new ForbiddenException("Unauthorized: Only admin can perform this action");
+        }
+    }
+
     async addRoom(createRoomDto: CreateRoomDto, authHeader: string){
         try{
-            console.log("Adding room...");
-
-            const result = await this.jwtService.verifyAsync(authHeader);
-
-            if(result.role !== 'admin'){
-                throw new UnauthorizedException("Unauthorized: Only admin can add rooms");
-            }
+            await this.verifyAdmin(authHeader);
 
             const roomData = await this.database.db.insert(roomsTable).values(createRoomDto).returning();
 
@@ -29,13 +43,7 @@ export class AdminService {
 
     async updateRoom(updateRoomDto: CreateRoomDto, authHeader: string){
         try{
-            console.log("Updating room...");
-
-            const result = await this.jwtService.verifyAsync(authHeader);
-
-            if(result.role !== 'admin'){
-                throw new UnauthorizedException("Unauthorized: Only admin can update rooms");
-            }
+            await this.verifyAdmin(authHeader);
 
             const {id, ...updateData} = updateRoomDto;
 
@@ -46,7 +54,7 @@ export class AdminService {
             const roomData = await this.database.db.update(roomsTable).set(updateData).where(eq(roomsTable.id, id)).returning();
 
             if(roomData.length === 0){
-                throw new UnauthorizedException("Room not found or no changes made");
+                throw new NotFoundException("Room not found or no changes made");
             }
 
             return {roomData: roomData, message: "Room updated successfully"};
@@ -57,21 +65,24 @@ export class AdminService {
 
     async deleteRoom(deleteRoomDto: CreateRoomDto, authHeader: string){
         try{
-            console.log("Deleting room...");
-
-            const result = await this.jwtService.verifyAsync(authHeader);
-            
-            if(result.role !== 'admin'){
-                throw new UnauthorizedException("Unauthorized: Only admin can delete rooms");
-            }
+            await this.verifyAdmin(authHeader);
 
             if(deleteRoomDto.id === undefined){
                 throw new UnauthorizedException("Room ID is required for deletion");
             }
 
-            const dbresponse = await this.database.db.delete(roomsTable).where(eq(roomsTable.id, deleteRoomDto.id)).returning();
+            const roomData = await this.database.db.delete(roomsTable).where(eq(roomsTable.id, deleteRoomDto.id)).returning();
+
+            if(roomData.length === 0){
+                throw new NotFoundException("Room not found or already deleted");
+            }
+
+            return {roomData: roomData, message: "Room deleted successfully"};
+
         }catch(error){
+
             throw new UnauthorizedException("Failed to delete room");
+
         }
     }
 }

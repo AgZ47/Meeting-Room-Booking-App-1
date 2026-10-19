@@ -36,7 +36,7 @@ export class AuthService {
 
             return {usertoken: token, message: "User registered successfully"};
         }catch(error){
-            console.error(error);
+            
             throw new UnauthorizedException("Failed to register user");
 
         }
