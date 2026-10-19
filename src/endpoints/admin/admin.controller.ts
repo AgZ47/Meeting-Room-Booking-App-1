@@ -1,5 +1,6 @@
-import { Body, Controller, Post, Put, Delete, Get } from '@nestjs/common';
+import { Body, Controller, Post, Put, Delete, Get, Headers } from '@nestjs/common';
 import type { CreateUserDto } from './dto/create-user.dto.js';
+import type { CreateRoomDto } from './dto/create-room.dto.js';
 import { AdminService } from './admin.service.js';
 
 @Controller('admin')
@@ -25,17 +26,17 @@ export class AdminController {
     }
 
     @Put('rooms')
-    updateRoom(){
-        return{message: "Successfully updated room"}
+    updateRoom(@Body() updateRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
+        return this.adminService.updateRoom(updateRoomDto, authHeader);
     }
 
     @Post('rooms')
-    addRoom() {
-        return{message: "Successfully added room"}
+    addRoom(@Body() createRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){ 
+        return this.adminService.addRoom(createRoomDto, authHeader);
     }
 
     @Delete('rooms')
-    deleteRoom(){
-        return{message: "Successfully deleted room"}
+    deleteRoom(@Body() deleteRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
+        return this.adminService.deleteRoom(deleteRoomDto, authHeader);
     }
 }
