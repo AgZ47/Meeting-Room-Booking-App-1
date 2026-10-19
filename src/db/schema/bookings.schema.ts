@@ -8,7 +8,7 @@ export const bookingsTable = pgTable("bookings", {
     id: serial().primaryKey(),
     room_id: integer().notNull().references(() => roomsTable.id),
     user_id: integer().notNull().references(() => usersTable.id),
-    booking_date: date().notNull(),
+    booking_date: date().notNull().defaultNow(),
     start_time: time().notNull(),
     end_time: time().notNull(),
     purpose: varchar({length: 255}).notNull(),
