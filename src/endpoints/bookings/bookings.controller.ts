@@ -7,16 +7,16 @@ export class BookingsController {
 
     @Post()
     bookRoomSlot(){
-        return{message: "Successfully booked room slot"}
+        return this.bookingsService.bookRoomSlot();
     }
 
     @Get('me')
     getAllMyBookings(){
-        return{message: "Successfully fetched all bookings of the user"}
+        return this.bookingsService.getAllMyBookings();
     }
 
     @Delete(':id/cancel')
     cancelRoomBooking(){
-        return{message: "Successfully cancelled user room booking"}
+        return this.bookingsService.cancelRoomBooking();
     }
 }
