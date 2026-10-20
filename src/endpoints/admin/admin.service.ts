@@ -33,17 +33,9 @@ export class AdminService {
         
         await this.verifyAdmin(authHeader);
 
-        try{
+        const roomData = await this.database.db.insert(roomsTable).values(createRoomDto).returning();
 
-            const roomData = await this.database.db.insert(roomsTable).values(createRoomDto).returning();
-
-            return {roomData: roomData, message: "Room added successfully"};
-
-        }catch(error){
-
-            throw new UnauthorizedException("Failed to add room");
-
-        }
+        return {roomData: roomData, message: "Room added successfully"};
     }
 
     async updateRoom(updateRoomDto: CreateRoomDto, authHeader: string){
@@ -56,17 +48,7 @@ export class AdminService {
             throw new UnauthorizedException("Room ID is required for updating");
         }
 
-        let roomData;
-
-        try{
-
-            roomData = await this.database.db.update(roomsTable).set(updateData).where(eq(roomsTable.id, id)).returning();
-
-        }catch(error){
-
-            throw new UnauthorizedException(error || "Failed to update room");
-
-        }
+        const roomData = await this.database.db.update(roomsTable).set(updateData).where(eq(roomsTable.id, id)).returning();
 
         if(roomData.length === 0){
             throw new NotFoundException("Room not found or no changes made");
@@ -76,25 +58,15 @@ export class AdminService {
         return {roomData: roomData, message: "Room updated successfully"};
     }
 
-    async deactivateRoom(deleteRoomDto: CreateRoomDto, authHeader: string){
+    async deactivateRoom(roomId: number, authHeader: string){
 
         await this.verifyAdmin(authHeader);
 
-        if(deleteRoomDto.id === undefined){
+        if(roomId === undefined){
             throw new UnauthorizedException("Room ID is required for deactivation");
         }
-
-        let roomData;
-
-        try{
-
-            roomData = await this.database.db.update(roomsTable).set({is_active: false}).where(eq(roomsTable.id, deleteRoomDto.id)).returning();
-
-        }catch(error){
-
-            throw new UnauthorizedException("Failed to deactivate room");
-
-        }
+        
+        const roomData = await this.database.db.update(roomsTable).set({is_active: false}).where(eq(roomsTable.id, roomId)).returning();
 
         if(roomData.length === 0){
             throw new NotFoundException("Room not found");
@@ -106,13 +78,7 @@ export class AdminService {
     async getAllBookings(authHeader: string){
         await this.verifyAdmin(authHeader);
 
-        let bookingData;
-
-        try{
-            bookingData = await this.database.db.select().from(bookingsTable);
-        }catch(error){
-            throw new InternalServerErrorException("Failed to retrieve bookings");
-        }
+        const bookingData = await this.database.db.select().from(bookingsTable);
 
         return {bookingData: bookingData, message: "Bookings retrieved successfully"};
     }
@@ -120,13 +86,7 @@ export class AdminService {
     async cancelBooking(bookingId: number, authHeader: string){
         await this.verifyAdmin(authHeader);
 
-        let bookingData;
-        
-        try{
-            bookingData = await this.database.db.update(bookingsTable).set({status: 'cancelled'}).where(and(eq(bookingsTable.id, bookingId), eq(bookingsTable.status, 'confirmed'))).returning();
-        }catch(error){
-            throw new InternalServerErrorException("Failed to cancel booking");
-        }
+        const bookingData = await this.database.db.update(bookingsTable).set({status: 'cancelled'}).where(and(eq(bookingsTable.id, bookingId), eq(bookingsTable.status, 'confirmed'))).returning();
 
         if(!bookingData){
             throw new NotFoundException("Booking not found or already cancelled");

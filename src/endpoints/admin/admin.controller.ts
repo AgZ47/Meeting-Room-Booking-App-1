@@ -1,6 +1,7 @@
-import { Body, Controller, Post, Put, Delete, Get, Headers, Param, Header } from '@nestjs/common';
-import type { CreateRoomDto } from './dto/create-room.dto.js';
+import { Body, Controller, Post, Put, Delete, Get, Headers, Param, Header, ParseIntPipe } from '@nestjs/common';
+import { createRoomSchema, updateRoomSchema, type CreateRoomDto } from './dto/create-room.dto.js';
 import { AdminService } from './admin.service.js';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 
 @Controller('admin')
 export class AdminController {
@@ -12,22 +13,22 @@ export class AdminController {
     }
 
     @Put('bookings/:id/cancel')
-    cancelBooking(@Param('id') bookingId:number, @Headers('Authorization') authHeader: string){
+    cancelBooking(@Param('id', ParseIntPipe) bookingId:number, @Headers('Authorization') authHeader: string){
         return this.adminService.cancelBooking(bookingId, authHeader);
     }
 
     @Put('rooms')
-    updateRoom(@Body() updateRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
+    updateRoom(@Body(new ZodValidationPipe(updateRoomSchema)) updateRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
         return this.adminService.updateRoom(updateRoomDto, authHeader);
     }
 
     @Post('rooms')
-    addRoom(@Body() createRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){ 
+    addRoom(@Body(new ZodValidationPipe(createRoomSchema)) createRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){ 
         return this.adminService.addRoom(createRoomDto, authHeader);
     }
 
-    @Delete('rooms')
-    deactivateRoom(@Body() deleteRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
-        return this.adminService.deactivateRoom(deleteRoomDto, authHeader);
+    @Delete('rooms/:id')
+    deactivateRoom(@Param('id', ParseIntPipe) roomId: number, @Headers('Authorization') authHeader: string){
+        return this.adminService.deactivateRoom(roomId, authHeader);
     }
 }

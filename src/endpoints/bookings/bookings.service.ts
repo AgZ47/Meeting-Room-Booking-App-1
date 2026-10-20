@@ -39,16 +39,9 @@ export class BookingsService {
         if(createBookingDto.start_time >= createBookingDto.end_time){
             throw new BadRequestException("Invalid time range: start_time must be before end_time");
         }
-
-        try{
-
-            const bookingData = await this.database.db.insert(bookingsTable).values(createBookingDto).returning();
-            
-            return{data: bookingData, message: "Successfully booked room slot"};
-
-        }catch(error){
-            throw new ConflictException('This room is already booked for the requested time');
-        }
+        const bookingData = await this.database.db.insert(bookingsTable).values(createBookingDto).returning();
+        
+        return{data: bookingData, message: "Successfully booked room slot"};
     }
 
     async getAllMyBookings(authHeader: string){
@@ -58,16 +51,10 @@ export class BookingsService {
         if(!id){
             throw new UnauthorizedException("Invalid token");
         }
+        
+        const bookingsData = await this.database.db.select().from(bookingsTable).where(eq(bookingsTable.user_id, id));
 
-        try{
-
-            const bookingsData = await this.database.db.select().from(bookingsTable).where(eq(bookingsTable.user_id, id));
-
-            return { data: bookingsData, message:" Successfully fetched all bookings of the user" };
-
-        }catch(error){
-            throw new NotFoundException("No bookings found for the user");
-        }
+        return { data: bookingsData, message:" Successfully fetched all bookings of the user" };
     }
 
     async cancelRoomBooking(authHeader: string, bookingId: number){
