@@ -3,7 +3,7 @@ import { DatabaseService } from '../../database/database.service.js';
 import type { CreateBookingDto } from './dto/create-booking.dto.js';
 import { JwtService } from '@nestjs/jwt';
 import { bookingsTable } from '../../db/index.js';
-import {eq} from 'drizzle-orm';
+import {and, eq} from 'drizzle-orm';
 
 @Injectable()
 export class BookingsService {
@@ -59,12 +59,36 @@ export class BookingsService {
             throw new UnauthorizedException("Invalid token");
         }
 
-        const bookingsData = await this.database.db.select().from(bookingsTable).where(eq(bookingsTable.user_id, id));
+        try{
 
-        return { data: bookingsData, message:" Successfully fetched all bookings of the user" };
+            const bookingsData = await this.database.db.select().from(bookingsTable).where(eq(bookingsTable.user_id, id));
+
+            return { data: bookingsData, message:" Successfully fetched all bookings of the user" };
+
+        }catch(error){
+            throw new NotFoundException("No bookings found for the user");
+        }
     }
 
-    async cancelRoomBooking(){
-        
+    async cancelRoomBooking(authHeader: string, bookingId: number){
+        const userId = await this.verifyUser(authHeader);
+
+        console.log("Canceling booking...");
+
+        if(bookingId === undefined){
+            throw new BadRequestException("Booking ID is required to cancel a booking");
+        }
+
+        if(!userId){
+            throw new UnauthorizedException("Invalid token or missing user ID in token");
+        }
+
+        const bookingsData = await this.database.db.update(bookingsTable).set({ status: "cancelled" }).where(and(eq(bookingsTable.id, bookingId), eq(bookingsTable.user_id,userId))).returning();
+
+        if(bookingsData.length === 0){
+            throw new NotFoundException("Booking not found or already canceled");
+        }
+
+        return { data: bookingsData, message: "Successfully cancelled room booking" };
     }
 }

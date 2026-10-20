@@ -5,7 +5,7 @@ import { usersTable } from "./users.schema.js";
 export const statusEnum = pgEnum("status", ["confirmed", "cancelled", "completed"])
 
 export const bookingsTable = pgTable("bookings", {
-    id: serial().primaryKey(),
+    id: serial().primaryKey().notNull(),
     room_id: integer().notNull().references(() => roomsTable.id),
     user_id: integer().notNull().references(() => usersTable.id),
     booking_date: date().notNull().defaultNow(),
