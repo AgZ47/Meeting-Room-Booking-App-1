@@ -35,6 +35,7 @@ export class AuthService {
     }
 
     async loginUser(body: userLoginBody){
+
         const userData = await this.database.db.select().from(usersTable).where(eq(usersTable.email, body.email));
 
         if(!userData[0]){
