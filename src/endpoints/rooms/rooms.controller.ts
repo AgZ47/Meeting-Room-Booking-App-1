@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Headers } from '@nestjs/common';
 import { RoomsService } from './rooms.service.js';
 
 @Controller('rooms')
@@ -6,12 +6,12 @@ export class RoomsController {
     constructor(private roomsService:RoomsService){}
 
     @Get()
-    getAllRooms(){
-        return{message: "Fetched all active rooms"}
+    getAllRooms(@Headers('Authorization') authHeader: string){
+        return this.roomsService.getAllRooms(authHeader);
     }
 
     @Get(':id/availability')
-    getRoomByFilter(){
-        return{message: "Fetched filtered rooms"}
+    getRoomByFilter(@Headers('Authorization') authHeader: string){
+        return this.roomsService.getRoomByFilter(authHeader);
     }
 }
