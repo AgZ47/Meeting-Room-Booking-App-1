@@ -1,5 +1,4 @@
-import { Body, Controller, Post, Put, Delete, Get, Headers } from '@nestjs/common';
-import type { CreateUserDto } from './dto/create-user.dto.js';
+import { Body, Controller, Post, Put, Delete, Get, Headers, Param, Header } from '@nestjs/common';
 import type { CreateRoomDto } from './dto/create-room.dto.js';
 import { AdminService } from './admin.service.js';
 
@@ -8,21 +7,13 @@ export class AdminController {
     constructor(private adminService:AdminService){}
 
     @Get('bookings')
-    async getBookings(@Body() createUserDto: CreateUserDto){
-        // const result = await this.database.db.insert(usersTable).values(createUserDto)
-        // return{data: createUserDto, message: "successfully updated db"}
-        
-        return{message: "fetched all bookings"}
+    async getAllBookings(@Headers('Authorization') authHeader: string){
+        return this.adminService.getAllBookings(authHeader);
     }
 
-    @Put('bookings')
-    updateBooking(){
-        return{message: "Successfully updated booking"}
-    }
-
-    @Delete('bookings')
-    deleteBooking(){
-        return{message: "Successfully deleted booking"}
+    @Put('bookings/:id/cancel')
+    cancelBooking(@Param('id') bookingId:number, @Headers('Authorization') authHeader: string){
+        return this.adminService.cancelBooking(bookingId, authHeader);
     }
 
     @Put('rooms')
@@ -36,7 +27,7 @@ export class AdminController {
     }
 
     @Delete('rooms')
-    deleteRoom(@Body() deleteRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
-        return this.adminService.deleteRoom(deleteRoomDto, authHeader);
+    deactivateRoom(@Body() deleteRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
+        return this.adminService.deactivateRoom(deleteRoomDto, authHeader);
     }
 }
