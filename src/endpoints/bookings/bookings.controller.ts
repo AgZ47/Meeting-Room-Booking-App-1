@@ -1,18 +1,19 @@
-import { Controller, Post, Get, Body, Headers, Put, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, Headers, Put, Param, ParseIntPipe } from '@nestjs/common';
 import { BookingsService } from './bookings.service.js';
-import type { CreateBookingDto } from './dto/create-booking.dto.js';
+import { roomBookingsSchema, type CreateBookingDto } from './dto/create-booking.dto.js';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 
 @Controller('bookings')
 export class BookingsController {
     constructor(private bookingsService:BookingsService){}
 
     @Put(':id/cancel')
-    cancelRoomBooking(@Param('id') bookingId: number, @Headers('Authorization') authHeader: string){
+    cancelRoomBooking(@Param('id', ParseIntPipe) bookingId: number, @Headers('Authorization') authHeader: string){
         return this.bookingsService.cancelRoomBooking(authHeader, bookingId);
     }
 
     @Post()
-    bookRoomSlot(@Body() createBookingDto: CreateBookingDto, @Headers('Authorization') authHeader: string){
+    bookRoomSlot(@Body( new ZodValidationPipe(roomBookingsSchema)) createBookingDto: CreateBookingDto, @Headers('Authorization') authHeader: string){
         return this.bookingsService.bookRoomSlot(createBookingDto, authHeader);
     }
 

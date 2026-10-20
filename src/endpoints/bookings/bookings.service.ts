@@ -3,7 +3,7 @@ import { DatabaseService } from '../../database/database.service.js';
 import type { CreateBookingDto } from './dto/create-booking.dto.js';
 import { JwtService } from '@nestjs/jwt';
 import { bookingsTable } from '../../db/index.js';
-import {and, eq} from 'drizzle-orm';
+import {and, eq, DrizzleQueryError} from 'drizzle-orm';
 
 @Injectable()
 export class BookingsService {
@@ -39,9 +39,15 @@ export class BookingsService {
         if(createBookingDto.start_time >= createBookingDto.end_time){
             throw new BadRequestException("Invalid time range: start_time must be before end_time");
         }
-        const bookingData = await this.database.db.insert(bookingsTable).values(createBookingDto).returning();
-        
-        return{data: bookingData, message: "Successfully booked room slot"};
+
+        try{
+            const bookingData = await this.database.db.insert(bookingsTable).values(createBookingDto).returning();
+            return{data: bookingData, message: "Successfully booked room slot"};
+        }catch(error){
+            if ( error instanceof DrizzleQueryError && error.cause && 'code' in error.cause && error.cause.code === '23P01') {
+                throw new ConflictException('This room is already booked for the requested time slot');
+            }
+        }
     }
 
     async getAllMyBookings(authHeader: string){
