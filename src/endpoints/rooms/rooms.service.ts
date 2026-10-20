@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/c
 import { DatabaseService } from '../../database/database.service.js';
 import { JwtService } from '@nestjs/jwt';
 import { roomsTable } from '../../db/index.js';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 @Injectable()
 export class RoomsService {
@@ -36,7 +36,7 @@ export class RoomsService {
         let roomData;
 
         try{
-            roomData = await this.database.db.select().from(roomsTable).where(eq(roomsTable.is_active, true));
+            roomData = await this.database.db.select().from(roomsTable);
         }catch(error){
             throw new UnauthorizedException("Failed to retrieve rooms");
         }
@@ -44,7 +44,17 @@ export class RoomsService {
         return {roomData: roomData, message: "Rooms retrieved successfully"};
     }
 
-    async getRoomByFilter(authHeader: string){
+    async getRoomByFilter(authHeader: string, roomId: string, status: string, bookingDate: string){
         await this.verifyUser(authHeader);
+
+        let roomData;
+        
+        try{
+            roomData = await this.database.db.select().from(roomsTable).where(and(eq(roomsTable.is_active, status === 'active' ? true : false), eq(roomsTable.id, parseInt(roomId))));
+        }catch(error){
+            throw new UnauthorizedException("Failed to retrieve rooms");
+        }
+
+        return {roomData: roomData, message: "Rooms retrieved successfully"};
     }
 }
