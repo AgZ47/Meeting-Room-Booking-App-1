@@ -38,19 +38,14 @@ export class RoomsService {
         return {roomData: roomData, message: "Rooms retrieved successfully"};
     }
 
-    async getRoomByFilter(authHeader: string, roomId: string, status: string){
+    async getRoomByFilter(authHeader: string, roomId: number, status: string){
         await this.verifyUser(authHeader);
-
-        const id = Number(roomId);
-        if(!Number.isInteger(id) || id <= 0){
-            throw new BadRequestException("Invalid room ID");
-        }
 
         if(status !== 'active' && status !== 'inactive'){
             throw new BadRequestException("Invalid status must be either 'active' or 'inactive'");
         }
 
-        const roomData = await this.database.db.select().from(roomsTable).where(and(eq(roomsTable.is_active, status === 'active' ? true : false), eq(roomsTable.id, parseInt(roomId))));
+        const roomData = await this.database.db.select().from(roomsTable).where(and(eq(roomsTable.is_active, status === 'active' ? true : false), eq(roomsTable.id, roomId)));
 
         if(!roomData){
             throw new NotFoundException("No rooms found for the given filter");

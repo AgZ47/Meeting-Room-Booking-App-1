@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Param} from '@nestjs/common';
+import { Controller, Get, Headers, Param, ParseIntPipe} from '@nestjs/common';
 import { RoomsService } from './rooms.service.js';
 
 @Controller('rooms')
@@ -11,7 +11,7 @@ export class RoomsController {
     }
 
     @Get(':id/:status/availability')
-    getRoomByFilter(@Headers('Authorization') authHeader: string, @Param('id') roomId: string, @Param('status') status: string){
+    getRoomByFilter(@Headers('Authorization') authHeader: string, @Param('id', ParseIntPipe) roomId: number, @Param('status') status: string){
         return this.roomsService.getRoomByFilter(authHeader, roomId, status);
     }
 }
