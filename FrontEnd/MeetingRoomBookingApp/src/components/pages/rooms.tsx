@@ -1,7 +1,14 @@
+import { useSelector } from "react-redux";
 import { useGetAllRoomsQuery } from "../../state/rooms/roomsApiSlice"
+import type { RootState } from "../../state/store";
 
 export const Rooms = () => {
-    const { data, isLoading, isError, error, refetch} = useGetAllRoomsQuery()
+    const token = useSelector((state: RootState) => state.auth.usertoken);
+    const { data, isLoading, isError, error, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
+
+    if(!token){
+        return <div>Please login to view Rooms.</div>
+    }
 
     if(isLoading){
         return(

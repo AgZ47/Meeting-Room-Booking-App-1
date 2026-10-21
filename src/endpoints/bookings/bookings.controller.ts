@@ -19,6 +19,6 @@ export class BookingsController {
 
     @Get('me')
     getAllMyBookings(@Headers('Authorization') authHeader: string){
-        return this.bookingsService.getAllMyBookings(authHeader);
+        return this.bookingsService.getAllUserBookings(authHeader);
     }
 }

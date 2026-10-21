@@ -50,7 +50,7 @@ export class BookingsService {
         }
     }
 
-    async getAllMyBookings(authHeader: string){
+    async getAllUserBookings(authHeader: string){
 
         const id = await this.verifyUser(authHeader);
 
