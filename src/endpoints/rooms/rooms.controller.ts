@@ -10,8 +10,8 @@ export class RoomsController {
         return this.roomsService.getAllRooms(authHeader);
     }
 
-    @Get(':id/:status/availability')
-    getRoomByFilter(@Headers('Authorization') authHeader: string, @Param('id', ParseIntPipe) roomId: number, @Param('status') status: string){
-        return this.roomsService.getRoomByFilter(authHeader, roomId, status);
+    @Get(':status')
+    getRoomByFilter(@Headers('Authorization') authHeader: string, @Param('status') status: string){
+        return this.roomsService.getRoomByFilter(authHeader, status);
     }
 }

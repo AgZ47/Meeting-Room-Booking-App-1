@@ -1,12 +1,12 @@
-import { Button } from "../../ui/button"
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../ui/card"
-import { Input } from "../../ui/input"
+import { Button } from "../ui/button"
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card"
+import { Input } from "../ui/input"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "@tanstack/react-form"
 import { z } from 'zod'
-import { useRegisterUserMutation } from "../../../state/auth/authApiSlice"
+import { useRegisterUserMutation } from "../../state/auth/authApiSlice"
 import { useDispatch } from "react-redux"
-import { setCredentials } from "../../../state/auth/authSlice"
+import { setCredentials } from "../../state/auth/authSlice"
 
 const inputSchema = z.object({
     name: z.string().max(100),

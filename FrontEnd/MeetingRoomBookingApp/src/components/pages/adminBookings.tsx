@@ -1,10 +1,9 @@
 import { useSelector } from "react-redux";
-import { useGetBookingsQuery } from "../../../state/admin/adminApiSlice";
-import type { RootState } from "../../../state/store";
+import { useGetBookingsQuery } from "../../state/admin/adminApiSlice";
+import type { RootState } from "../../state/store";
 
 export const AdminBookings = () => {
   const token = useSelector((state: RootState) => state.auth.usertoken);
-
   const { data, isLoading, isError, error, refetch} = useGetBookingsQuery(undefined, { skip: !token });
 
   if (!token) {

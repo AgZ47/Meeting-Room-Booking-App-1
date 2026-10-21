@@ -1,13 +1,12 @@
-import { Button } from '../../ui/button'
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../ui/card'
-import { Input } from '../../ui/input'
+import { Button } from '../ui/button'
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import { Input } from '../ui/input'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
-import { useLoginUserMutation } from '../../../state/auth/authApiSlice'
-import { useDispatch, useSelector } from 'react-redux'
-import { setCredentials } from '../../../state/auth/authSlice'
+import { useLoginUserMutation } from '../../state/auth/authApiSlice'
+import { useDispatch } from 'react-redux'
+import { setCredentials } from '../../state/auth/authSlice'
 import { useNavigate } from 'react-router-dom'
-import type { RootState } from '../../../state/store'
 
 const inputSchema = z.object({
   email: z.email(),
@@ -18,7 +17,6 @@ export const LoginPage = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const [loginUser, {isLoading}] = useLoginUserMutation();
-    const token = useSelector((state: RootState) => state.auth.usertoken);
 
     const form = useForm({
         defaultValues: {
@@ -30,7 +28,7 @@ export const LoginPage = () => {
                 const result = await loginUser(inputSchema.parse(value)).unwrap();
 
                 dispatch(setCredentials({ usertoken: result.usertoken }));
-                
+
                 navigate('/admin/bookings');
             } catch (error) {
                 console.error('Login failed:', error);
