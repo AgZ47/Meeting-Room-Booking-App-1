@@ -5,14 +5,22 @@ export const authApiSlice = createApi({
     baseQuery: fetchBaseQuery({
         baseUrl:"http://localhost:3000/auth",
     }),
-    endpoints:(builder) => ({ loginUser: builder.mutation<{ usertoken: string, message: string }, { email: string; password_hash: string }>({
-      query: (credentials) => ({
-        url: '/login',
-        method: 'POST',
-        body: credentials,
+    endpoints:(builder) => ({ 
+      loginUser: builder.mutation<{ usertoken: string, message: string }, { email: string; password_hash: string }>({
+        query: (credentials) => ({
+          url: '/login',
+          method: 'POST',
+          body: credentials,
+        }),
       }),
-    }),
+      registerUser: builder.mutation<{ usertoken: string, message: string}, {name: string, email: string, password_hash: string}>({
+        query: (credentials) => ({
+          url: '/register',
+          method: 'POST',
+          body: credentials
+        })
+      }),
   }),
 });
 
-export const { useLoginUserMutation } = authApiSlice;
+export const { useLoginUserMutation, useRegisterUserMutation } = authApiSlice;

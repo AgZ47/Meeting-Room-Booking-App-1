@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useLoginUserMutation } from '../../state/auth/authApiSlice'
 import { useDispatch } from 'react-redux'
 import { setCredentials } from '../../state/auth/authSlice'
+import { useNavigate } from 'react-router-dom'
 
 const inputSchema = z.object({
   email: z.email(),
@@ -14,6 +15,7 @@ const inputSchema = z.object({
 
 export const LoginPage = () => {
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const [loginUser] = useLoginUserMutation();
 
     const form = useForm({
@@ -23,7 +25,7 @@ export const LoginPage = () => {
         },
         onSubmit: async ({value}) =>{
             const result = await loginUser(inputSchema.parse(value)).unwrap();
-            dispatch(setCredentials(result))
+            dispatch(setCredentials({usertoken: result.usertoken}))
         }
     })
 
@@ -34,7 +36,7 @@ export const LoginPage = () => {
                 <CardTitle>Login to your account</CardTitle>
                 <CardDescription>Enter your credentials to access your account</CardDescription>
                 <CardAction>
-                <Button>SignUp</Button>
+                <Button onClick={() => navigate('/register')}>SignUp</Button>
                 </CardAction>
             </CardHeader>
             <CardContent>
@@ -47,7 +49,7 @@ export const LoginPage = () => {
                     <label htmlFor="email">Email</label>
                     <form.Field name="email">
                         {(field) => (
-                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="email" type="email" placeholder="m@example.com" />
+                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="email" type="email" placeholder="user@example.com" />
                         )}
                     </form.Field>
                     </div>

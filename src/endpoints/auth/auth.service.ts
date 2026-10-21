@@ -8,7 +8,7 @@ import { eq } from 'drizzle-orm';
 export type userRegisterBody = {
     name: string;
     email: string;
-    password: string;
+    password_hash: string;
     role: "admin" | "user";
 }
 
@@ -25,11 +25,11 @@ export class AuthService {
     ){}
 
     async registerUser(body: userRegisterBody){
-        body.password = await bcrypt.hash(body.password, 10);
+        body.password_hash = await bcrypt.hash(body.password_hash, 10);
 
-        const userData = await this.database.db.insert(usersTable).values({name: body.name, email: body.email, password_hash: body.password, role: body.role}).returning();
+        const userData = await this.database.db.insert(usersTable).values({name: body.name, email: body.email, password_hash: body.password_hash, role: body.role}).returning();
 
-        const token = await this.jwtService.signAsync({id: userData[0].id, name: userData[0].name, role: userData[0].role});
+        const token = await this.jwtService.signAsync({id: userData[0].id, role: userData[0].role});
 
         return {usertoken: token, message: "User registered successfully"};
     }
@@ -48,7 +48,7 @@ export class AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        const token = await this.jwtService.signAsync({id: userData[0].id, name: userData[0].name, role: userData[0].role});
+        const token = await this.jwtService.signAsync({id: userData[0].id, role: userData[0].role});
 
 
         return {usertoken: token, message: "User logged in successfully"};
