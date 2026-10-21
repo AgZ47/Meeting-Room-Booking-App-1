@@ -1,12 +1,13 @@
-import { Button } from '../ui/button'
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
-import { Input } from '../ui/input'
+import { Button } from '../../ui/button'
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../ui/card'
+import { Input } from '../../ui/input'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
-import { useLoginUserMutation } from '../../state/auth/authApiSlice'
-import { useDispatch } from 'react-redux'
-import { setCredentials } from '../../state/auth/authSlice'
+import { useLoginUserMutation } from '../../../state/auth/authApiSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { setCredentials } from '../../../state/auth/authSlice'
 import { useNavigate } from 'react-router-dom'
+import type { RootState } from '../../../state/store'
 
 const inputSchema = z.object({
   email: z.email(),
@@ -16,18 +17,32 @@ const inputSchema = z.object({
 export const LoginPage = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const [loginUser] = useLoginUserMutation();
+    const [loginUser, {isLoading}] = useLoginUserMutation();
+    const token = useSelector((state: RootState) => state.auth.usertoken);
 
     const form = useForm({
         defaultValues: {
             email: '',
             password_hash: '',
         },
-        onSubmit: async ({value}) =>{
-            const result = await loginUser(inputSchema.parse(value)).unwrap();
-            dispatch(setCredentials({usertoken: result.usertoken}))
+        onSubmit: async ({ value }) => {
+            try {
+                const result = await loginUser(inputSchema.parse(value)).unwrap();
+
+                dispatch(setCredentials({ usertoken: result.usertoken }));
+                
+                navigate('/admin/bookings');
+            } catch (error) {
+                console.error('Login failed:', error);
+            }
         }
     })
+
+    if(isLoading){
+        return (
+            <div>...Loading</div>
+        )
+    }
 
     return(
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
