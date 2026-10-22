@@ -4,6 +4,7 @@ import type { RootState } from "../store";
 export type bookingsFetchType = {
     id: number,
     room_id: number,
+    user_id: number,
     booking_date: string,
     start_time: string,
     end_time: string,

@@ -4,15 +4,21 @@ import type { RootState } from "../../state/store";
 import { useTable, tableFeatures } from "@tanstack/react-table"
 import type { ColumnDef } from "@tanstack/react-table";
 import type { bookingsFetchType } from "../../state/bookings/bookingsApiSlice";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 const features = tableFeatures({})
 
-const columns: ColumnDef<typeof features, bookingsFetchType>[] = [
+export const columns: ColumnDef<typeof features, bookingsFetchType>[] = [
   {
     accessorKey: 'id',
     id: 'id',
     header: 'ID',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey:'user_id',
+    id:'user_id',
+    header: 'User ID',
     cell: (info) => info.getValue(),
   },
   {
@@ -51,13 +57,13 @@ const columns: ColumnDef<typeof features, bookingsFetchType>[] = [
     header: 'Status',
     cell: (info) => {
       if(info.getValue() === 'confirmed'){
-        return (<div className="bg-green-500">{info.getValue<string>()}</div>)
+        return (<div className="outline-2 outline-green-500 rounded-lg text-center">{info.getValue<string>()}</div>)
       }
       if(info.getValue() === 'cancelled'){
-        return(<div className="bg-red-500">{info.getValue<string>()}</div>)
+        return(<div className="outline-2 outline-red-500 rounded-lg text-center">{info.getValue<string>()}</div>)
       }
       if(info.getValue() === 'completed'){
-        return(<div className="bg-blue-500">{info.getValue<string>()}</div>)
+        return(<div className="outline-2 outline-blue-500 rounded-lg text-center">{info.getValue<string>()}</div>)
       }
     },
   },
@@ -108,32 +114,34 @@ export const AdminBookings = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">All Bookings</h2>
-      <table className="outline-2 rounded-lg">
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder ? null : (
-                    <table.FlexRender header={header} />
-                  )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getAllCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  <table.FlexRender cell={cell} />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </table>
+      <div className="outline-2 rounded-lg">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : (
+                      <table.FlexRender header={header} />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getAllCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    <table.FlexRender cell={cell} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
