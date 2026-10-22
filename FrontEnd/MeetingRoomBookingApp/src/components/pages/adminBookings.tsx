@@ -1,10 +1,87 @@
 import { useSelector } from "react-redux";
 import { useGetBookingsQuery } from "../../state/admin/adminApiSlice";
 import type { RootState } from "../../state/store";
+import { useTable, tableFeatures } from "@tanstack/react-table"
+import type { ColumnDef } from "@tanstack/react-table";
+import type { bookingsFetchType } from "../../state/bookings/bookingsApiSlice";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+
+const features = tableFeatures({})
+
+const columns: ColumnDef<typeof features, bookingsFetchType>[] = [
+  {
+    accessorKey: 'id',
+    id: 'id',
+    header: 'ID',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey: 'room_id',
+    id: 'room_id',
+    header: 'Room ID',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey: 'booking_date',
+    id: 'booking_date',
+    header: 'Booking Date',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey: 'start_time',
+    id: 'start_time',
+    header: 'Start Time',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey: 'end_time',
+    id: 'end_time',
+    header: 'End Time',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey: 'purpose',
+    id: 'purpose',
+    header: 'Purpose',
+    cell: (info) => info.getValue(),
+  },
+  {
+    accessorKey: 'status',
+    id: 'status',
+    header: 'Status',
+    cell: (info) => {
+      if(info.getValue() === 'confirmed'){
+        return (<div className="bg-green-500">{info.getValue<string>()}</div>)
+      }
+      if(info.getValue() === 'cancelled'){
+        return(<div className="bg-red-500">{info.getValue<string>()}</div>)
+      }
+      if(info.getValue() === 'completed'){
+        return(<div className="bg-blue-500">{info.getValue<string>()}</div>)
+      }
+    },
+  },
+  {
+    accessorKey: 'created_at',
+    id: 'created_at',
+    header: 'Created At',
+    cell: (info) => info.getValue(),
+  },
+]
 
 export const AdminBookings = () => {
   const token = useSelector((state: RootState) => state.auth.usertoken);
   const { data, isLoading, isError, error, refetch} = useGetBookingsQuery(undefined, { skip: !token });
+
+
+  const bookings = data?.bookingData ?? [];
+
+  const table = useTable({
+    key: 'bookingstable',
+    features,
+    columns,
+    data: bookings,
+  })
 
   if (!token) {
     return <p>Please log in to view bookings.</p>;
@@ -24,8 +101,6 @@ export const AdminBookings = () => {
     );
   }
 
-  const bookings = data?.bookingData ?? [];
-
   if (bookings.length === 0) {
     return <p>No bookings found.</p>;
   }
@@ -33,30 +108,32 @@ export const AdminBookings = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">All Bookings</h2>
-
-      <div className="space-y-3">
-        {bookings.map((booking) => (
-          <div key={booking.id} className="space-y-2 rounded-lg border p-4">
-            <div className="flex justify-between gap-4">
-              <h3 className="font-medium">
-                Booking ID.{booking.id}
-              </h3>
-              <span className="capitalize">{booking.status}</span>
-            </div>
-
-            <p>Room ID: {booking.room_id}</p>
-            <p>User ID: {booking.user_id}</p>
-            <p>Date: {booking.booking_date}</p>
-            <p>
-              Time: {booking.start_time} - {booking.end_time}
-            </p>
-            <p>Purpose: {booking.purpose}</p>
-            <p className="text-sm text-muted-foreground">
-              Created: {booking.created_at}
-            </p>
-          </div>
-        ))}
-      </div>
+      <table className="outline-2 rounded-lg">
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder ? null : (
+                    <table.FlexRender header={header} />
+                  )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow key={row.id}>
+              {row.getAllCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  <table.FlexRender cell={cell} />
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </table>
     </div>
   );
 };

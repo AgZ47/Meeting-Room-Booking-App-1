@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
 
-type bookingsFetchType = {
+export type bookingsFetchType = {
     id: number,
     room_id: number,
     booking_date: string,
