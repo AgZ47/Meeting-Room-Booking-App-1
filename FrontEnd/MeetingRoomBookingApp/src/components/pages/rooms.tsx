@@ -73,6 +73,7 @@ const columns: Array<ColumnDef<typeof features, rooms>> = [
 
 export const Rooms = () => {
     const token = useSelector((state: RootState) => state.auth.usertoken);
+    const userRole = useSelector((state: RootState) => state.auth.role);
     const { data, isLoading, isError, error, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
 
     const rooms = data?.roomData ?? [];

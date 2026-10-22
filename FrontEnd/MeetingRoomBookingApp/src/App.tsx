@@ -4,6 +4,8 @@ import { RegisterPage } from "./components/pages/registerPage";
 import { AdminBookings } from "./components/pages/adminBookings";
 import { Rooms } from "./components/pages/rooms";
 import { Bookings } from "./components/pages/bookings";
+import type { RootState } from "./state/store";
+import { useSelector } from "react-redux";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
@@ -13,6 +15,9 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 function App() {
+  const role = useSelector((state: RootState) => state.auth.role)
+  const userName = useSelector((state: RootState) => state.auth.name)
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Top navigation */}
@@ -42,15 +47,18 @@ function App() {
             <NavLink to="/bookings/me" className={navLinkClass}>
               My Bookings
             </NavLink>
-
-            <NavLink to="/admin/bookings" className={navLinkClass}>
-              Admin
-            </NavLink>
+            
+            {role && role === "admin" ? 
+              <NavLink to="/admin/bookings" className={navLinkClass}>
+                Admin
+              </NavLink>
+             : null}
+            
           </div>
 
           {/* Authentication links */}
           <div className="flex items-center gap-2">
-            <NavLink
+            {!role ? <><NavLink
               to="/"
               end
               className={({ isActive }) =>
@@ -63,19 +71,27 @@ function App() {
             >
               Log in
             </NavLink>
-
             <NavLink
               to="/register"
               className={({ isActive }) =>
                 `rounded-lg px-4 py-2 text-sm font-semibold transition ${
                   isActive
-                    ? "bg-indigo-700 text-white"
-                    : "bg-slate-950 text-white shadow-sm hover:bg-indigo-700"
+                    ? "bg-mist-700 text-white"
+                    : "bg-slate-950 text-white shadow-sm hover:bg-slate-700"
                 }`
               }
             >
-              Sign up
-            </NavLink>
+              Sign up 
+            </NavLink></> : 
+            <div className="flex flex-col">
+              <div>
+                  Name: {userName}
+              </div>
+              <div>
+                  Role: {role}
+              </div>
+            </div>
+            }
           </div>
         </nav>
       </header>

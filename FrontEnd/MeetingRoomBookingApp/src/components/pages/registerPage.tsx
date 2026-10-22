@@ -27,7 +27,7 @@ export const RegisterPage = () => {
         },
         onSubmit: async ({value}) => {
             const result = await registerUser(inputSchema.parse(value)).unwrap()
-            dispatch(setCredentials({usertoken: result.usertoken}))
+            dispatch(setCredentials({usertoken: result.usertoken, name: result.name, role: result.role}))
 
         }
     })

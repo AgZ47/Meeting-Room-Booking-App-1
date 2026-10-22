@@ -27,9 +27,15 @@ export const LoginPage = () => {
             try {
                 const result = await loginUser(inputSchema.parse(value)).unwrap();
 
-                dispatch(setCredentials({ usertoken: result.usertoken }));
+                dispatch(setCredentials({ usertoken: result.usertoken, name: result.name, role: result.role }));
 
-                navigate('/admin/bookings');
+                if(result.role === "admin"){
+                    navigate('/admin/bookings');
+                }
+                if(result.role === "user"){
+                    navigate('/rooms')
+                }
+                
             } catch (error) {
                 console.error('Login failed:', error);
             }
