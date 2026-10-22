@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
+import type { roomsType } from "../rooms/roomsApiSlice";
 
 type Booking = {
   id: number;
@@ -17,6 +18,8 @@ type GetBookingsResponse = {
   bookingData: Booking[];
   message: string;
 };
+
+type addRooms = Omit<roomsType, 'id' | 'is_active'>
 
 export const adminApiSlice = createApi({
     reducerPath: 'adminapi',
@@ -42,8 +45,28 @@ export const adminApiSlice = createApi({
                 method: 'PUT',
                 body: updatedVals
             })
+        }),
+        addRoom: builder.mutation<addRooms, Partial<roomsType>>({
+            query: (room) => ({
+                url: '/rooms',
+                method: 'POST',
+                body: room
+            })
+        }),
+        updateRoom: builder.mutation<Partial<roomsType>, roomsType>({
+            query: (updatedRoom) => ({
+                url: '/rooms',
+                method: 'POST',
+                body: updatedRoom
+            })
+        }),
+        deactivateRoom: builder.mutation<roomsType, number>({
+            query: (id) => ({
+                url: `/rooms/${id}`,
+                method: 'DELETE'
+            })
         })
     })
 })
 
-export const {useGetBookingsQuery, useUpdateBookingsMutation} = adminApiSlice
+export const {useGetBookingsQuery, useUpdateBookingsMutation, useAddRoomMutation, useUpdateRoomMutation, useDeactivateRoomMutation} = adminApiSlice

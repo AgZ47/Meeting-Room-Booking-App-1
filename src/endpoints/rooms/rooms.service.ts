@@ -33,7 +33,7 @@ export class RoomsService {
     async getAllRooms(authHeader: string){
         await this.verifyUser(authHeader);
 
-        const roomData = await this.database.db.select().from(roomsTable).where(eq(roomsTable.is_active, true));
+        const roomData = await this.database.db.select().from(roomsTable);
 
         return {roomData: roomData, message: "Rooms retrieved successfully"};
     }
