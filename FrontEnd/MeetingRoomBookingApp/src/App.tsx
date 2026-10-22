@@ -39,7 +39,7 @@ function App() {
               Rooms
             </NavLink>
 
-            <NavLink to="/bookings" className={navLinkClass}>
+            <NavLink to="/bookings/me" className={navLinkClass}>
               My Bookings
             </NavLink>
 
@@ -87,7 +87,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin/bookings" element={<AdminBookings />} />
           <Route path="/rooms" element={<Rooms />} />
-          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/bookings/me" element={<Bookings />} />
         </Routes>
       </main>
     </div>

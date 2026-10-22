@@ -1,11 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
 
-
-export type bookingsFetchType = {
+type bookingsFetchType = {
     id: number,
     room_id: number,
-    user_id: number,
     booking_date: string,
     start_time: string,
     end_time: string,
@@ -14,13 +12,13 @@ export type bookingsFetchType = {
     created_at: string,
 }
 
-export type bookingsPostType = Omit<bookingsFetchType, 'id'|'created_at'> & {}
+type bookingsPostType = Omit<bookingsFetchType, 'id'|'created_at'> & {}
 
-export type bookingsCancelType = {
+type bookingsCancelType = {
     id: number,
 }
 
-const bookingsApiSlice = createApi({
+export const bookingsApiSlice = createApi({
     reducerPath:"bookingsapi",
     baseQuery: fetchBaseQuery({
         baseUrl: 'http://localhost:3000',
@@ -45,9 +43,11 @@ const bookingsApiSlice = createApi({
         }),
         cancelUserBooking: builder.mutation<{data: bookingsFetchType, message:string},bookingsCancelType>({
             query:(bookingId) => ({
-                url: `/bookings/${bookingId.id}`,
+                url: `/bookings/${bookingId.id}/cancel`,
                 method:'PUT',
             })
         })
     })
 })
+
+export const { useGetAllUserBookingsQuery, usePostUserBookingMutation, useCancelUserBookingMutation } = bookingsApiSlice

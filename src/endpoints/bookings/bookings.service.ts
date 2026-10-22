@@ -24,7 +24,7 @@ export class BookingsService {
             throw new UnauthorizedException("Invalid or expired token");
         }
 
-        if(payload.role === 'admin' || payload.role === 'user'){
+        if((payload.role === 'admin' || payload.role === 'user') && typeof payload.id === 'number'){
             return payload.id;   
         }else{
             throw new ForbiddenException("Unauthorized: Only authorized admin and users can perform this action");
@@ -34,14 +34,16 @@ export class BookingsService {
     async bookRoomSlot(createBookingDto: CreateBookingDto, authHeader: string){
         console.log("Booking room...");
 
-        await this.verifyUser(authHeader);
+        const id = await this.verifyUser(authHeader);
 
-        if(createBookingDto.start_time >= createBookingDto.end_time){
+        const storeVal = {...createBookingDto, user_id: id}
+
+        if(storeVal.start_time >= storeVal.end_time){
             throw new BadRequestException("Invalid time range: start_time must be before end_time");
         }
 
         try{
-            const bookingData = await this.database.db.insert(bookingsTable).values(createBookingDto).returning();
+            const bookingData = await this.database.db.insert(bookingsTable).values(storeVal).returning();
             return{data: bookingData, message: "Successfully booked room slot"};
         }catch(error){
             if ( error instanceof DrizzleQueryError && error.cause && 'code' in error.cause && error.cause.code === '23P01') {
