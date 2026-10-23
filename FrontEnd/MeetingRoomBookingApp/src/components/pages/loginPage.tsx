@@ -43,8 +43,8 @@ export const LoginPage = () => {
     })
 
     if(isLoading){
-        return (
-            <div>...Loading</div>
+        return(
+            <div className="p-auto font-bold text-center">Loding...</div>
         )
     }
 
@@ -55,7 +55,7 @@ export const LoginPage = () => {
                 <CardTitle>Login to your account</CardTitle>
                 <CardDescription>Enter your credentials to access your account</CardDescription>
                 <CardAction>
-                <Button onClick={() => navigate('/register')}>SignUp</Button>
+                    <Button onClick={() => navigate('/register')}>SignUp</Button>
                 </CardAction>
             </CardHeader>
             <CardContent>
@@ -65,25 +65,25 @@ export const LoginPage = () => {
                 }}>
                 <div className="flex flex-col gap-6">
                     <div className="grid gap-2">
-                    <label htmlFor="email">Email</label>
-                    <form.Field name="email">
-                        {(field) => (
-                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="email" type="email" placeholder="user@example.com" />
-                        )}
-                    </form.Field>
+                        <label htmlFor="email">Email</label>
+                        <form.Field name="email">
+                            {(field) => (
+                            <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="email" type="email" placeholder="user@example.com" />
+                            )}
+                        </form.Field>
                     </div>
                     <div className="grid gap-2">
-                    <div className="flex items-center">
-                        <label htmlFor="password">Password</label>
-                        <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
-                        Forgot your password?
-                        </a>
-                    </div>
-                    <form.Field name="password_hash">
-                        {(field) => (
-                        <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="password" type="password" placeholder="password" />
-                        )}
-                    </form.Field>
+                        <div className="flex items-center">
+                            <label htmlFor="password">Password</label>
+                            <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
+                            Forgot your password?
+                            </a>
+                        </div>
+                        <form.Field name="password_hash">
+                            {(field) => (
+                            <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="password" type="password" placeholder="password" />
+                            )}
+                        </form.Field>
                     </div>
                 </div>
                 </form>

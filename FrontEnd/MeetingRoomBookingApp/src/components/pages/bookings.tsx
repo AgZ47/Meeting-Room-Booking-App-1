@@ -25,7 +25,9 @@ export const Bookings = () => {
     }
 
     if(isLoading){
-        return <div></div>
+        return(
+            <div className="p-auto font-bold text-center">Loding...</div>
+        )
     }
 
     if (isError) {

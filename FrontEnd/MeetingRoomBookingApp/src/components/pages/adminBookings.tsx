@@ -94,7 +94,9 @@ export const AdminBookings = () => {
   }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return(
+      <div className="p-auto font-bold text-center">Loding...</div>
+    )
   }
 
   if (isError) {

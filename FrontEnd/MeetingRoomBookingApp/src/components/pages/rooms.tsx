@@ -6,6 +6,10 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../ui/table"
 import { Button } from "../ui/button";
 import { useAddRoomMutation, useDeactivateRoomMutation, useUpdateRoomMutation } from "../../state/admin/adminApiSlice";
 import { useState } from "react";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { useForm } from "@tanstack/react-form";
+import {z} from "zod"
+import { Input } from "../ui/input";
 
 const features = tableFeatures({})
 
@@ -17,6 +21,14 @@ type rooms = {
     facilities: string[], 
     is_active: boolean,
 }
+
+const addRoomSchema = z.object({
+    name: z.string().trim().min(1).max(100),
+    capacity: z.number().int().positive(),
+    floor: z.number().int().min(0),
+    facilities: z.array(z.string().trim().min(1)).default([]),
+    is_active: z.boolean().default(true),
+})
 
 export const Rooms = () => {
     const [isAddOpen, setisAddOpen] = useState<boolean>(false)
@@ -35,19 +47,6 @@ export const Rooms = () => {
     const handleUpdate = async (rowData: rooms) => {
         await updateRoom(rowData).unwrap()
         refetch();
-    }
-
-    const handleAdd = async () => {
-        // const addRowData = {
-        //     name: 'Gemba 1',
-        //     capacity: 6,
-        //     floor: 0,
-        //     facilities: ['AC'],
-        // }
-        // await addRoom(addRowData)
-        // refetch();
-        const val = isAddOpen
-        setisAddOpen(!val)
     }
 
     const columns: Array<ColumnDef<typeof features, rooms>> = [
@@ -126,13 +125,29 @@ export const Rooms = () => {
         data: rooms,
     })
 
+    const form = useForm({
+        defaultValues: {
+            name: '',
+            capacity: 1,
+            floor: 0,
+            facilities: ["AC"],
+            is_active: true,
+        },
+        onSubmit: async ({value}) => {
+            await addRoom(addRoomSchema.parse(value))
+            refetch();
+            setisAddOpen(false)
+            form.reset()
+        }
+    })
+
     if(!token){
         return <div>Please login to view Rooms.</div>
     }
 
     if(isLoading){
         return(
-            <div>Loding...</div>
+            <div className="p-auto font-bold text-center">Loding...</div>
         )
     }
 
@@ -148,49 +163,120 @@ export const Rooms = () => {
 
     return(
         <div className="space-y-4">
-            <div className="flex flex-row justify-between">
-                <h2 className="text-xl font-semibold">
-                    Meeting Rooms
-                </h2>
-                {userRole === "admin" ? <Button onClick={() => handleAdd()}>
-                    Add+
-                </Button> : null}
-            </div>
-            <div className="outline-2 rounded-lg">
-                {rooms.length !== 0 ? <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableCell key={header.id}>
-                                        {header.isPlaceholder ? null : (
-                                            <table.FlexRender header={header}/>
-                                        )}
+            <Card>
+                <CardHeader>
+                    <CardTitle>
+                        Meeting Rooms
+                    </CardTitle>
+                    <CardDescription>
+                        View all Meeting Rooms
+                    </CardDescription>
+                    <CardAction>
+                        {userRole === "admin" ? <Button onClick={() => setisAddOpen(true)}>
+                            Add Room+
+                        </Button> : null}
+                    </CardAction>
+                </CardHeader>
+                <CardContent>
+                    {rooms.length !== 0 ? <Table>
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableCell key={header.id}>
+                                            {header.isPlaceholder ? null : (
+                                                <table.FlexRender header={header}/>
+                                            )}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                            {table.getRowModel().rows.map((row) => (
+                            <TableRow key={row.id}>
+                                {row.getAllCells().map((cell) => (
+                                    <TableCell key={cell.id}>
+                                        <table.FlexRender cell={cell} />
                                     </TableCell>
                                 ))}
                             </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows.map((row) => (
-                        <TableRow key={row.id}>
-                            {row.getAllCells().map((cell) => (
-                                <TableCell key={cell.id}>
-                                    <table.FlexRender cell={cell} />
-                                </TableCell>
                             ))}
-                        </TableRow>
-                        ))}
-                    </TableBody>
-                </Table> : 
-                <div className="p-5 text-center">
-                    No rooms Available
-                </div>
-                }
-            </div>
-            <dialog open={isAddOpen} className="outline-2 fixed inset-0 m-auto rounded-lg p-10 z-50">
-                <div>
-                    this is a dialog box
+                        </TableBody>
+                    </Table> : 
+                    <div className="p-5 text-center">
+                        No rooms Available
+                    </div>
+                    }
+                </CardContent>
+            </Card>
+            <dialog open={isAddOpen} className="fixed inset-0 size-full z-50 bg-slate-950/50">
+                <div className="size-full flex justify-center items-center">
+                    <Card className="w-3/5">
+                        <CardHeader>
+                            <CardTitle>
+                                Add Rooms
+                            </CardTitle>
+                            <CardDescription>
+                                Enter meeting room details to add
+                            </CardDescription>
+                            <CardAction>
+                                <Button onClick={() => setisAddOpen(false)}>Cancel</Button>
+                            </CardAction>
+                        </CardHeader>
+                        <CardContent>
+                            <form id="roomAdd-form" onSubmit={(e) => {
+                                e.preventDefault()
+                                form.handleSubmit()
+                            }}>
+                                <div className="flex flex-col gap-6">
+                                    <div className="grid gap-2">
+                                        <label htmlFor="name">Room Name</label>
+                                        <form.Field name="name">
+                                            {(field) => (
+                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="name" type="text" placeholder="Room Name" />
+                                            )}
+                                        </form.Field>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <label htmlFor="capacity">Room Capacity</label>
+                                        <form.Field name="capacity">
+                                            {(field) => (
+                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="capacity" type="number" placeholder="Room Capacity" />
+                                            )}
+                                        </form.Field>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <label htmlFor="floor">Floor</label>
+                                        <form.Field name="floor">
+                                            {(field) => (
+                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="floor" type="number" placeholder="Floor" />
+                                            )}
+                                        </form.Field>
+                                    </div>
+                                    {/* <div className="grid gap-2">
+                                        <label htmlFor="facilities">Facilities</label>
+                                        <form.Field name="name">
+                                            {(field) => (
+                                            <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="name" type="text" placeholder="Room Name" />
+                                            )}
+                                        </form.Field>
+                                    </div> */}
+                                    {/* <div className="grid gap-2">
+                                        <label htmlFor="is_active">Status</label>
+                                        <form.Field name="is_active">
+                                            {(field) => (
+                                            <Input value={field.state.value} onChange={(e) => field.handleChange(Boolean(e.target.value))} id="is_active" type="radio" placeholder="Status" />
+                                            )}
+                                        </form.Field>
+                                    </div> */}
+                                </div>
+                            </form>
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" form="roomAdd-form">Submit</Button>
+                        </CardFooter>
+                    </Card>
                 </div>
             </dialog>
         </div>
