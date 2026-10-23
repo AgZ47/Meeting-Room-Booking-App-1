@@ -10,6 +10,9 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { useForm } from "@tanstack/react-form";
 import {z} from "zod"
 import { Input } from "../ui/input";
+import { Checkbox } from "../ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Label } from "../ui/label";
 
 const features = tableFeatures({})
 
@@ -21,6 +24,18 @@ type rooms = {
     facilities: string[], 
     is_active: boolean,
 }
+
+const availableFacilities = [
+  "TV", 
+  "Projector", 
+  "Video Conferencing system", 
+  "WhiteBoard", 
+  "Smart Board", 
+  "AC", 
+  "Sound Proof", 
+  "Coffee Bar", 
+  "Accessibility+"
+];
 
 const addRoomSchema = z.object({
     name: z.string().trim().min(1).max(100),
@@ -109,7 +124,7 @@ export const Rooms = () => {
             header: 'Action',
             cell: (info) => {
                 return(<div className="flex gap-2">
-                    <Button variant="outline" onClick={() => handleDelete(info.row.original)}>Deactivate</Button>
+                    <Button variant="outline" onClick={() => handleDelete(info.row.original)}>{info.row.original.is_active ? `Deactivate` : `Activate`}</Button>
                     <Button variant="outline" onClick={() => handleUpdate(info.row.original)}>Update</Button>
                 </div>)
             }
@@ -130,11 +145,12 @@ export const Rooms = () => {
             name: '',
             capacity: 1,
             floor: 0,
-            facilities: ["AC"],
+            facilities: ["AC"] as string[],
             is_active: true,
         },
         onSubmit: async ({value}) => {
-            await addRoom(addRoomSchema.parse(value))
+            // await addRoom(addRoomSchema.parse(value))
+            console.log(addRoomSchema.parse(value))
             refetch();
             setisAddOpen(false)
             form.reset()
@@ -254,22 +270,52 @@ export const Rooms = () => {
                                             )}
                                         </form.Field>
                                     </div>
-                                    {/* <div className="grid gap-2">
-                                        <label htmlFor="facilities">Facilities</label>
-                                        <form.Field name="name">
-                                            {(field) => (
-                                            <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="name" type="text" placeholder="Room Name" />
-                                            )}
+                                    <div className="grid gap-2">
+                                        <form.Field name="facilities">
+                                        {(field) => (
+                                            <div className="space-y-3">
+                                            <p className="font-medium">Facilities</p>
+
+                                            {availableFacilities.map((facility) => (
+                                                <label
+                                                key={facility}
+                                                className="flex items-center gap-2"
+                                                >
+                                                <Checkbox
+                                                    id={facility}
+                                                    checked={field.state.value.includes(facility)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                        field.pushValue(facility);
+                                                        } else {
+                                                        const index = field.state.value.indexOf(facility);
+
+                                                        if (index !== -1) {
+                                                            field.removeValue(index);
+                                                        }
+                                                        }
+                                                    }}
+                                                />
+                                                {facility}
+                                                </label>
+                                            ))}
+                                            </div>
+                                        )}
                                         </form.Field>
-                                    </div> */}
-                                    {/* <div className="grid gap-2">
+                                    </div>
+                                    <div className="grid gap-2">
                                         <label htmlFor="is_active">Status</label>
                                         <form.Field name="is_active">
                                             {(field) => (
-                                            <Input value={field.state.value} onChange={(e) => field.handleChange(Boolean(e.target.value))} id="is_active" type="radio" placeholder="Status" />
+                                                <RadioGroup value={String(field.state.value)} onValueChange={(value) => field.handleChange(value === "true")}>
+                                                    <RadioGroupItem value="true" id="active"/>
+                                                    <Label htmlFor="active">Activate</Label>
+                                                    <RadioGroupItem value="false" id="inactive"/>
+                                                    <Label htmlFor="inactive">Deactivate</Label>
+                                                </RadioGroup>
                                             )}
                                         </form.Field>
-                                    </div> */}
+                                    </div>
                                 </div>
                             </form>
                         </CardContent>

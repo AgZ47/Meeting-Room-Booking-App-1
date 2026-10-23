@@ -3,7 +3,7 @@ import { DatabaseService } from '../../database/database.service.js';
 import type { CreateRoomDto } from './dto/create-room.dto.js';
 import { roomsTable, bookingsTable } from '../../db/index.js';
 import { JwtService } from '@nestjs/jwt';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 @Injectable()
 export class AdminService {
@@ -66,7 +66,7 @@ export class AdminService {
             throw new UnauthorizedException("Room ID is required for deactivation");
         }
         
-        const roomData = await this.database.db.update(roomsTable).set({is_active: false}).where(eq(roomsTable.id, roomId)).returning();
+        const roomData = await this.database.db.update(roomsTable).set({is_active: sql `NOT ${roomsTable.is_active}`}).where(eq(roomsTable.id, roomId)).returning();
 
         if(roomData.length === 0){
             throw new NotFoundException("Room not found");

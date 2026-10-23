@@ -56,7 +56,7 @@ export const adminApiSlice = createApi({
         updateRoom: builder.mutation<Partial<roomsType>, roomsType>({
             query: (updatedRoom) => ({
                 url: '/rooms',
-                method: 'POST',
+                method: 'PUT',
                 body: updatedRoom
             })
         }),
