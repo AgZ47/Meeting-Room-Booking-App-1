@@ -53,7 +53,7 @@ export const adminApiSlice = createApi({
                 body: room
             })
         }),
-        updateRoom: builder.mutation<Partial<roomsType>, roomsType>({
+        updateRoom: builder.mutation<Partial<roomsType>, Partial<roomsType>>({
             query: (updatedRoom) => ({
                 url: '/rooms',
                 method: 'PUT',

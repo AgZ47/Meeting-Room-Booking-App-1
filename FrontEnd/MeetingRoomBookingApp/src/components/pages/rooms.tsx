@@ -45,8 +45,16 @@ const addRoomSchema = z.object({
     is_active: z.boolean().default(true),
 })
 
+const updateRoomSchema = z.object({
+    name: z.string().trim().min(1).max(100),
+    capacity: z.number().int().positive(),
+    floor: z.number().int().min(0),
+    facilities: z.array(z.string().trim().min(1)).default([]),
+})
+
 export const Rooms = () => {
     const [isAddOpen, setisAddOpen] = useState<boolean>(false)
+    const [isUpdateOpen, setisUpdateOpen] = useState<boolean>(false)
     const token = useSelector((state: RootState) => state.auth.usertoken);
     const userRole = useSelector((state: RootState) => state.auth.role);
     const { data, isLoading, isError, error, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
@@ -58,11 +66,6 @@ export const Rooms = () => {
         await deactivateRoom(rowData.id).unwrap()
         refetch();
     }   
-
-    const handleUpdate = async (rowData: rooms) => {
-        await updateRoom(rowData).unwrap()
-        refetch();
-    }
 
     const columns: Array<ColumnDef<typeof features, rooms>> = [
         {
@@ -125,22 +128,23 @@ export const Rooms = () => {
             cell: (info) => {
                 return(<div className="flex gap-2">
                     <Button variant="outline" onClick={() => handleDelete(info.row.original)}>{info.row.original.is_active ? `Deactivate` : `Activate`}</Button>
-                    <Button variant="outline" onClick={() => handleUpdate(info.row.original)}>Update</Button>
+                    <Button variant="outline" onClick={() => setisUpdateOpen(true)}>Update</Button>
                 </div>)
             }
         }
     ]
 
     const rooms = data?.roomData ?? [];
+    const sortedrooms = [...rooms].sort((a, b) => a.id - b.id)
 
     const table = useTable({
         key: 'roomstable',
         features,
         columns,
-        data: rooms,
+        data: sortedrooms,
     })
 
-    const form = useForm({
+    const roomAddForm = useForm({
         defaultValues: {
             name: '',
             capacity: 1,
@@ -150,10 +154,26 @@ export const Rooms = () => {
         },
         onSubmit: async ({value}) => {
             // await addRoom(addRoomSchema.parse(value))
-            console.log(addRoomSchema.parse(value))
+            await console.log(addRoomSchema.safeParse(value))
             refetch();
             setisAddOpen(false)
-            form.reset()
+            roomAddForm.reset()
+        }
+    })
+
+    const roomUpdateForm = useForm({
+        defaultValues: {
+            name: '',
+            capacity: 1,
+            floor: 0,
+            facilities: ["AC"] as string[],
+        },
+        onSubmit: async ({value}) => {
+            // await updateRoom(updateRoomSchema.parse(value))
+            await console.log(updateRoomSchema.safeParse(value))
+            refetch();
+            setisUpdateOpen(false)
+            roomUpdateForm.reset()
         }
     })
 
@@ -243,35 +263,35 @@ export const Rooms = () => {
                         <CardContent>
                             <form id="roomAdd-form" onSubmit={(e) => {
                                 e.preventDefault()
-                                form.handleSubmit()
+                                roomAddForm.handleSubmit()
                             }}>
                                 <div className="flex flex-col gap-6">
                                     <div className="grid gap-2">
                                         <label htmlFor="name">Room Name</label>
-                                        <form.Field name="name">
+                                        <roomAddForm.Field name="name">
                                             {(field) => (
                                             <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="name" type="text" placeholder="Room Name" />
                                             )}
-                                        </form.Field>
+                                        </roomAddForm.Field>
                                     </div>
                                     <div className="grid gap-2">
                                         <label htmlFor="capacity">Room Capacity</label>
-                                        <form.Field name="capacity">
+                                        <roomAddForm.Field name="capacity">
                                             {(field) => (
                                             <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="capacity" type="number" placeholder="Room Capacity" />
                                             )}
-                                        </form.Field>
+                                        </roomAddForm.Field>
                                     </div>
                                     <div className="grid gap-2">
                                         <label htmlFor="floor">Floor</label>
-                                        <form.Field name="floor">
+                                        <roomAddForm.Field name="floor">
                                             {(field) => (
                                             <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="floor" type="number" placeholder="Floor" />
                                             )}
-                                        </form.Field>
+                                        </roomAddForm.Field>
                                     </div>
                                     <div className="grid gap-2">
-                                        <form.Field name="facilities">
+                                        <roomAddForm.Field name="facilities">
                                         {(field) => (
                                             <div className="space-y-3">
                                             <p className="font-medium">Facilities</p>
@@ -301,11 +321,11 @@ export const Rooms = () => {
                                             ))}
                                             </div>
                                         )}
-                                        </form.Field>
+                                        </roomAddForm.Field>
                                     </div>
                                     <div className="grid gap-2">
                                         <label htmlFor="is_active">Status</label>
-                                        <form.Field name="is_active">
+                                        <roomAddForm.Field name="is_active">
                                             {(field) => (
                                                 <RadioGroup value={String(field.state.value)} onValueChange={(value) => field.handleChange(value === "true")}>
                                                     <RadioGroupItem value="true" id="active"/>
@@ -314,13 +334,99 @@ export const Rooms = () => {
                                                     <Label htmlFor="inactive">Deactivate</Label>
                                                 </RadioGroup>
                                             )}
-                                        </form.Field>
+                                        </roomAddForm.Field>
                                     </div>
                                 </div>
                             </form>
                         </CardContent>
                         <CardFooter>
                             <Button type="submit" form="roomAdd-form">Submit</Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            </dialog>
+            <dialog open={isUpdateOpen} className="fixed inset-0 size-full z-50 bg-slate-950/50">
+                <div className="size-full flex justify-center items-center">
+                    <Card className="w-3/5">
+                        <CardHeader>
+                            <CardTitle>
+                                Update Room
+                            </CardTitle>
+                            <CardDescription>
+                                Enter meeting room details to add
+                            </CardDescription>
+                            <CardAction>
+                                <Button onClick={() => setisUpdateOpen(false)}>Cancel</Button>
+                            </CardAction>
+                        </CardHeader>
+                        <CardContent>
+                            <form id="roomUpdate-form" onSubmit={(e) => {
+                                e.preventDefault()
+                                roomUpdateForm.handleSubmit()
+                            }}>
+                                <div className="flex flex-col gap-6">
+                                    <div className="grid gap-2">
+                                        <label htmlFor="name">Room Name</label>
+                                        <roomUpdateForm.Field name="name">
+                                            {(field) => (
+                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="name" type="text" placeholder="Room Name" />
+                                            )}
+                                        </roomUpdateForm.Field>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <label htmlFor="capacity">Room Capacity</label>
+                                        <roomUpdateForm.Field name="capacity">
+                                            {(field) => (
+                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="capacity" type="number" placeholder="Room Capacity" />
+                                            )}
+                                        </roomUpdateForm.Field>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <label htmlFor="floor">Floor</label>
+                                        <roomUpdateForm.Field name="floor">
+                                            {(field) => (
+                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="floor" type="number" placeholder="Floor" />
+                                            )}
+                                        </roomUpdateForm.Field>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <roomUpdateForm.Field name="facilities">
+                                        {(field) => (
+                                            <div className="space-y-3">
+                                            <p className="font-medium">Facilities</p>
+
+                                            {availableFacilities.map((facility) => (
+                                                <label
+                                                key={facility}
+                                                className="flex items-center gap-2"
+                                                >
+                                                <Checkbox
+                                                    id={facility}
+                                                    checked={field.state.value.includes(facility)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                        field.pushValue(facility);
+                                                        } else {
+                                                        const index = field.state.value.indexOf(facility);
+
+                                                        if (index !== -1) {
+                                                            field.removeValue(index);
+                                                        }
+                                                        }
+                                                    }}
+                                                />
+                                                {facility}
+                                                </label>
+                                            ))}
+                                            </div>
+                                        )}
+                                        </roomUpdateForm.Field>
+                                    </div>
+                                </div>
+                            </form>
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" form="roomUpdate-form">Submit</Button>
                         </CardFooter>
                     </Card>
                 </div>
