@@ -1,8 +1,8 @@
 import { useSelector } from "react-redux"
-import { useGetAllUserBookingsQuery, usePostUserBookingMutation } from "../../state/bookings/bookingsApiSlice"
+import { useCancelUserBookingMutation, useGetAllUserBookingsQuery, usePostUserBookingMutation, type bookingsFetchType } from "../../state/bookings/bookingsApiSlice"
 import type { RootState } from "../../state/store"
-import { tableFeatures, useTable } from "@tanstack/react-table"
-import { columns } from "./adminBookings"
+import { tableFeatures, useTable, type CellContext } from "@tanstack/react-table"
+import { columns as adminBookingsColumns } from "./adminBookings"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Button } from "../ui/button"
@@ -17,7 +17,6 @@ const features = tableFeatures({})
 
 const meetingBookingSchema = z.object({
     room_id: z.number().int().positive(),
-    user_id: z.number().int().positive(),
     booking_date: z.iso.date(),
     start_time: z.iso.time({precision: -1}),
     end_time: z.iso.time({precision: -1}),
@@ -26,10 +25,25 @@ const meetingBookingSchema = z.object({
 
 export const Bookings = () => {
     const token = useSelector((state: RootState) => (state.auth.usertoken))
-    const role = useSelector((state: RootState) => (state.auth.role))
     const [isAddBookingOpen,setIsAddBookingOpen] = useState<boolean>(false)
     const {data, isLoading, isError, error, refetch} = useGetAllUserBookingsQuery(undefined, {skip: !token})
     const [ postData ] = usePostUserBookingMutation()
+    const [cancelData] = useCancelUserBookingMutation()
+
+    const columns = [...adminBookingsColumns, 
+        {
+            accessorKey: 'cancel_booking',
+            id: 'cancel_booking',
+            header: 'Options',
+            cell: (info: CellContext<{}, bookingsFetchType, unknown>) => 
+            <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
+                    cancelData({id: info.row.original.id})
+                    refetch();
+                }}>
+                Cancel Booking
+            </Button>
+        }
+    ]
 
     const bookings = data?.data ?? []
     const sortedBookings = [...bookings].sort((a,b) => a.id - b.id)
@@ -37,7 +51,6 @@ export const Bookings = () => {
     const addBookingForm = useForm({
         defaultValues: {
             room_id: 0,
-            user_id: 1,
             booking_date: '',
             start_time: '',
             end_time: '',
@@ -54,6 +67,7 @@ export const Bookings = () => {
 
             setIsAddBookingOpen(false)
             addBookingForm.reset()
+            refetch();
         }
     })
 

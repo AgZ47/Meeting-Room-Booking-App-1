@@ -13,7 +13,7 @@ export type bookingsFetchType = {
     created_at: string,
 }
 
-type bookingsPostType = Omit<bookingsFetchType, 'id'|'created_at'|'status'> & {}
+type bookingsPostType = Omit<bookingsFetchType, 'id'|'created_at'|'status'|'user_id'> & {}
 
 type bookingsCancelType = {
     id: number,
@@ -35,7 +35,7 @@ export const bookingsApiSlice = createApi({
         getAllUserBookings: builder.query<{data: bookingsFetchType[], message: string},void>({
             query: () => '/bookings/me',
         }),
-        postUserBooking: builder.mutation<{data: bookingsFetchType, message: string}, Partial<bookingsPostType>>({
+        postUserBooking: builder.mutation<{data: bookingsFetchType, message: string}, bookingsPostType>({
             query: (booking) => ({
                 url: '/bookings',
                 method:'POST',

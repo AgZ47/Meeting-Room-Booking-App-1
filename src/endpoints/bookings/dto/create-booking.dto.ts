@@ -6,7 +6,6 @@ import { z } from 'zod';
 
 export const roomBookingsSchema = z.object({
     room_id: z.number().int().positive(),
-    user_id: z.number().int().positive(),
     booking_date: z.iso.date().optional(),
     start_time: z.iso.time({precision: -1}),
     end_time: z.iso.time({precision: -1}),

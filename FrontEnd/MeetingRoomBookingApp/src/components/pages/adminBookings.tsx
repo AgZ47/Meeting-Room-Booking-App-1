@@ -5,6 +5,7 @@ import { useTable, tableFeatures } from "@tanstack/react-table"
 import type { ColumnDef } from "@tanstack/react-table";
 import type { bookingsFetchType } from "../../state/bookings/bookingsApiSlice";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { Button } from "../ui/button";
 
 const features = tableFeatures({})
 
@@ -71,7 +72,10 @@ export const columns: ColumnDef<typeof features, bookingsFetchType>[] = [
     accessorKey: 'created_at',
     id: 'created_at',
     header: 'Created At',
-    cell: (info) => info.getValue(),
+    cell: (info) => {
+      const value = info.getValue<string>();
+      return new Date(value).toLocaleString();
+    },
   },
 ]
 
