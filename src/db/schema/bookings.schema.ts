@@ -6,8 +6,8 @@ export const statusEnum = pgEnum("status", ["confirmed", "cancelled", "completed
 
 export const bookingsTable = pgTable("bookings", {
     id: serial().primaryKey().notNull(),
-    room_id: integer().notNull().references(() => roomsTable.id),
-    user_id: integer().notNull().references(() => usersTable.id),
+    room_id: integer().notNull().references(() => roomsTable.id, {onDelete: 'cascade'}),
+    user_id: integer().notNull().references(() => usersTable.id, {onDelete: 'cascade'}),
     booking_date: date().notNull().defaultNow(),
     start_time: time().notNull(),
     end_time: time().notNull(),

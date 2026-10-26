@@ -10,7 +10,7 @@ export const roomBookingsSchema = z.object({
     start_time: z.iso.time({precision: -1}),
     end_time: z.iso.time({precision: -1}),
     purpose: z.string().trim().min(1).max(255),
-    status: z.enum(['confirmed', 'cancelled', 'completed']).default('completed'),
+    status: z.enum(['confirmed', 'cancelled', 'completed']).default('confirmed'),
 });
 
 export type RoomBookingsZSchema = z.infer<typeof roomBookingsSchema>;
