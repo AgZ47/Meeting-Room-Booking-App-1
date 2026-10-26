@@ -13,6 +13,7 @@ import { Input } from "../ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
+import { Field, FieldDescription, FieldLabel } from "../ui/field";
 
 const features = tableFeatures({})
 
@@ -468,8 +469,8 @@ export const Rooms = () => {
                 }}
                 >
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="add-name">Room name</Label>
+                    <Field className="space-y-2 sm:col-span-2">
+                    <FieldLabel htmlFor="add-name">Room name</FieldLabel>
                     <roomAddForm.Field name="name">
                         {(field) => (
                         <Input
@@ -481,10 +482,10 @@ export const Rooms = () => {
                         />
                         )}
                     </roomAddForm.Field>
-                    </div>
+                    </Field>
 
-                    <div className="space-y-2">
-                    <Label htmlFor="add-capacity">Capacity</Label>
+                    <Field className="space-y-2">
+                    <FieldLabel htmlFor="add-capacity">Capacity</FieldLabel>
                     <roomAddForm.Field name="capacity">
                         {(field) => (
                         <Input
@@ -499,10 +500,10 @@ export const Rooms = () => {
                         />
                         )}
                     </roomAddForm.Field>
-                    </div>
+                    </Field>
 
-                    <div className="space-y-2">
-                    <Label htmlFor="add-floor">Floor</Label>
+                    <Field className="space-y-2">
+                    <FieldLabel htmlFor="add-floor">Floor</FieldLabel>
                     <roomAddForm.Field name="floor">
                         {(field) => (
                         <Input
@@ -517,16 +518,14 @@ export const Rooms = () => {
                         />
                         )}
                     </roomAddForm.Field>
-                    </div>
+                    </Field>
                 </div>
 
-                <div className="space-y-3">
-                    <div>
-                    <Label>Facilities</Label>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                <Field className="space-y-3">
+                    <FieldLabel>Facilities</FieldLabel>
+                    <FieldDescription className="mt-1 text-xs text-muted-foreground">
                         Select all facilities available in this room.
-                    </p>
-                    </div>
+                    </FieldDescription>
 
                     <roomAddForm.Field name="facilities">
                     {(field) => (
@@ -557,10 +556,10 @@ export const Rooms = () => {
                         </div>
                     )}
                     </roomAddForm.Field>
-                </div>
+                </Field>
 
-                <div className="space-y-3">
-                    <Label>Initial status</Label>
+                <Field className="space-y-3">
+                    <FieldLabel>Initial status</FieldLabel>
                     <roomAddForm.Field name="is_active">
                     {(field) => (
                         <RadioGroup
@@ -587,7 +586,7 @@ export const Rooms = () => {
                         </RadioGroup>
                     )}
                     </roomAddForm.Field>
-                </div>
+                </Field>
                 </form>
             </CardContent>
 
@@ -650,8 +649,8 @@ export const Rooms = () => {
                     roomUpdateForm.handleSubmit();
                 }}
                 >
-                <div className="space-y-2">
-                    <Label htmlFor="update-name">Room name</Label>
+                <Field className="space-y-2">
+                    <FieldLabel htmlFor="update-name">Room name</FieldLabel>
                     <roomUpdateForm.Field name="name">
                     {(field) => (
                         <Input
@@ -662,11 +661,11 @@ export const Rooms = () => {
                         />
                     )}
                     </roomUpdateForm.Field>
-                </div>
+                </Field>
 
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <div className="space-y-2">
-                    <Label htmlFor="update-capacity">Capacity</Label>
+                    <Field className="space-y-2">
+                    <FieldLabel htmlFor="update-capacity">Capacity</FieldLabel>
                     <roomUpdateForm.Field name="capacity">
                         {(field) => (
                         <Input
@@ -681,10 +680,10 @@ export const Rooms = () => {
                         />
                         )}
                     </roomUpdateForm.Field>
-                    </div>
+                    </Field>
 
-                    <div className="space-y-2">
-                    <Label htmlFor="update-floor">Floor</Label>
+                    <Field className="space-y-2">
+                    <FieldLabel htmlFor="update-floor">Floor</FieldLabel>
                     <roomUpdateForm.Field name="floor">
                         {(field) => (
                         <Input
@@ -699,16 +698,14 @@ export const Rooms = () => {
                         />
                         )}
                     </roomUpdateForm.Field>
-                    </div>
+                    </Field>
                 </div>
 
-                <div className="space-y-3">
-                    <div>
-                    <Label>Facilities</Label>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                <Field className="space-y-3">
+                    <FieldLabel>Facilities</FieldLabel>
+                    <FieldDescription className="mt-1 text-xs text-muted-foreground">
                         Update the facilities available in this room.
-                    </p>
-                    </div>
+                    </FieldDescription>
 
                     <roomUpdateForm.Field name="facilities">
                     {(field) => (
@@ -739,7 +736,7 @@ export const Rooms = () => {
                         </div>
                     )}
                     </roomUpdateForm.Field>
-                </div>
+                </Field>
                 </form>
             </CardContent>
 
