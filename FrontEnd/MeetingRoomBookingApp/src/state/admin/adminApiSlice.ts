@@ -67,8 +67,20 @@ export const adminApiSlice = createApi({
                 url: `/rooms/${id}`,
                 method: 'DELETE'
             })
+        }),
+        cancelBooking: builder.mutation<Booking[], number>({
+            query: (id) => ({
+                url: `bookings/${id}/cancel`,
+                method:'PUT'
+            })
+        }),
+        deleteBooking: builder.mutation<Booking[], number>({
+            query: (id) => ({
+                url: `bookings/${id}/delete`,
+                method:'DELETE'
+            })
         })
     })
 })
 
-export const {useGetBookingsQuery, useUpdateBookingsMutation, useAddRoomMutation, useUpdateRoomMutation, useDeactivateRoomMutation} = adminApiSlice
+export const {useGetBookingsQuery, useUpdateBookingsMutation, useAddRoomMutation, useUpdateRoomMutation, useDeactivateRoomMutation, useCancelBookingMutation, useDeleteBookingMutation} = adminApiSlice

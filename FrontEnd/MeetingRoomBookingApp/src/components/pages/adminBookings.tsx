@@ -1,15 +1,16 @@
 import { useSelector } from "react-redux";
-import { useGetBookingsQuery } from "../../state/admin/adminApiSlice";
+import { useCancelBookingMutation, useDeleteBookingMutation, useGetBookingsQuery } from "../../state/admin/adminApiSlice";
 import type { RootState } from "../../state/store";
 import { useTable, tableFeatures } from "@tanstack/react-table"
-import type { ColumnDef } from "@tanstack/react-table";
+import type { CellContext, ColumnDef } from "@tanstack/react-table";
 import type { bookingsFetchType } from "../../state/bookings/bookingsApiSlice";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 
 const features = tableFeatures({})
 
-export const columns: ColumnDef<typeof features, bookingsFetchType>[] = [
+export const column: ColumnDef<typeof features, bookingsFetchType>[] = [
   {
     accessorKey: 'id',
     id: 'id',
@@ -82,36 +83,75 @@ export const columns: ColumnDef<typeof features, bookingsFetchType>[] = [
 export const AdminBookings = () => {
   const token = useSelector((state: RootState) => state.auth.usertoken);
   const { data, isLoading, isError, error, refetch} = useGetBookingsQuery(undefined, { skip: !token });
+  const [ cancelBooking ] = useCancelBookingMutation();
+  const [ deleteBooking ] = useDeleteBookingMutation();
 
+  const columns = [...column, {
+    accessorKey: 'cancel_booking',
+    id: 'cancel_booking',
+    header: 'Options',
+    cell: (info: CellContext<{}, bookingsFetchType, unknown>) => 
+    <div>
+      <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
+              cancelBooking(info.row.original.id)
+              refetch();
+          }}>
+          Cancel Booking
+      </Button>
+      <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
+              const result = deleteBooking(info.row.original.id)
+              refetch();
+          }}>
+          Delete Booking
+      </Button>
+    </div>
+  }]
 
   const bookings = data?.bookingData ?? [];
+  const sortedBookings = [...bookings].sort((a,b) => a.id-b.id)
 
   const table = useTable({
     key: 'bookingstable',
     features,
     columns,
-    data: bookings,
+    data: sortedBookings,
   })
 
   if (!token) {
-    return <p>Please log in to view bookings.</p>;
-  }
-
-  if (isLoading) {
-    return(
-      <div className="p-auto font-bold text-center">Loding...</div>
-    )
-  }
-
-  if (isError) {
     return (
-      <div>
-        <p>Failed to load bookings.</p>
-        <pre>{JSON.stringify(error, null, 2)}</pre>
-        <button onClick={() => refetch()}>Try again</button>
-      </div>
+        <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
+        <h2 className="text-lg font-semibold">Login required</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+            Please log in to view meeting rooms.
+        </p>
+        </div>
     );
-  }
+    }
+
+    if (isLoading) {
+    return (
+        <div className="mx-auto flex min-h-64 items-center justify-center">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
+            Loading meeting rooms...
+        </div>
+        </div>
+    );
+    }
+
+    if (isError) {
+    return (
+        <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
+        <h2 className="font-semibold">Unable to load rooms</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+            Something went wrong while retrieving the room list.
+        </p>
+        <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+            Try again
+        </Button>
+        </div>
+    );
+    }
 
   if (bookings.length === 0) {
     return <p>No bookings found.</p>;
@@ -119,35 +159,43 @@ export const AdminBookings = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">All Bookings</h2>
-      <div className="outline-2 rounded-lg">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <table.FlexRender header={header} />
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getAllCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <Card>
+        <CardHeader>
+          <h2 className="text-xl font-semibold">All Bookings</h2>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder ? null : (
+                        <table.FlexRender header={header} />
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getAllCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      <table.FlexRender cell={cell} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
+          <span>Showing all {sortedBookings.length} rooms</span>
+          <span>Sorted by ID</span>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

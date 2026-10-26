@@ -2,7 +2,7 @@ import { useSelector } from "react-redux"
 import { useCancelUserBookingMutation, useGetAllUserBookingsQuery, usePostUserBookingMutation, type bookingsFetchType } from "../../state/bookings/bookingsApiSlice"
 import type { RootState } from "../../state/store"
 import { tableFeatures, useTable, type CellContext } from "@tanstack/react-table"
-import { columns as adminBookingsColumns } from "./adminBookings"
+import { column as adminBookingsColumns } from "./adminBookings"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Button } from "../ui/button"
@@ -26,7 +26,7 @@ const meetingBookingSchema = z.object({
 export const Bookings = () => {
     const token = useSelector((state: RootState) => (state.auth.usertoken))
     const [isAddBookingOpen,setIsAddBookingOpen] = useState<boolean>(false)
-    const {data, isLoading, isError, error, refetch} = useGetAllUserBookingsQuery(undefined, {skip: !token})
+    const {data, isLoading, isError, refetch} = useGetAllUserBookingsQuery(undefined, {skip: !token})
     const [ postData ] = usePostUserBookingMutation()
     const [cancelData] = useCancelUserBookingMutation()
 
@@ -78,24 +78,40 @@ export const Bookings = () => {
         data: sortedBookings,
     })
 
-    if(!token){
-        return <div>Please login to view your bookings.</div>
+    if (!token) {
+    return (
+        <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
+        <h2 className="text-lg font-semibold">Login required</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+            Please log in to view meeting rooms.
+        </p>
+        </div>
+    );
     }
 
-    if(isLoading){
-        return(
-            <div className="p-auto font-bold text-center">Loding...</div>
-        )
+    if (isLoading) {
+    return (
+        <div className="mx-auto flex min-h-64 items-center justify-center">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
+            Loading meeting rooms...
+        </div>
+        </div>
+    );
     }
 
     if (isError) {
-        return (
-        <div>
-            <p>Failed to load bookings.</p>
-            <pre>{JSON.stringify(error, null, 2)}</pre>
-            <button onClick={() => refetch()}>Try again</button>
+    return (
+        <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
+        <h2 className="font-semibold">Unable to load rooms</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+            Something went wrong while retrieving the room list.
+        </p>
+        <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+            Try again
+        </Button>
         </div>
-        );
+    );
     }
 
     return(

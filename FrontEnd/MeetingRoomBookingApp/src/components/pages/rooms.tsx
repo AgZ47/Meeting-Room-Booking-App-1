@@ -12,7 +12,6 @@ import {z} from "zod"
 import { Input } from "../ui/input";
 import { Checkbox } from "../ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Label } from "../ui/label";
 import { Field, FieldDescription, FieldLabel } from "../ui/field";
 
 const features = tableFeatures({})

@@ -17,6 +17,11 @@ export class AdminController {
         return this.adminService.cancelBooking(bookingId, authHeader);
     }
 
+    @Delete('bookings/:id/delete')
+    deleteBooking(@Param('id', ParseIntPipe) bookingId:number, @Headers('Authorization') authHeader: string){
+        return this.adminService.deleteBooking(bookingId, authHeader);
+    }
+
     @Put('rooms')
     updateRoom(@Body(new ZodValidationPipe(updateRoomSchema)) updateRoomDto: CreateRoomDto, @Headers('Authorization') authHeader: string){
         return this.adminService.updateRoom(updateRoomDto, authHeader);

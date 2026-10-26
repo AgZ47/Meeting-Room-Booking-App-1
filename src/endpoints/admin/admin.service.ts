@@ -86,12 +86,24 @@ export class AdminService {
     async cancelBooking(bookingId: number, authHeader: string){
         await this.verifyAdmin(authHeader);
 
-        const bookingData = await this.database.db.update(bookingsTable).set({status: 'cancelled'}).where(and(eq(bookingsTable.id, bookingId), eq(bookingsTable.status, 'confirmed'))).returning();
+        const bookingData = await this.database.db.update(bookingsTable).set({status: 'cancelled'}).where(eq(bookingsTable.id, bookingId)).returning();
 
         if(!bookingData){
             throw new NotFoundException("Booking not found or already cancelled");
         }
 
         return {bookingData: bookingData, message: "Booking cancelled successfully"};
+    }
+
+    async deleteBooking(bookingId: number, authHeader: string){
+        await this.verifyAdmin(authHeader);
+
+        const bookingData = await this.database.db.delete(bookingsTable).where(eq(bookingsTable.id, bookingId)).returning();
+
+        if(!bookingData){
+            throw new NotFoundException("Booking not found or already deleted");
+        }
+
+        return {bookingData: bookingData, message: "Booking deleted successfully"};
     }
 }

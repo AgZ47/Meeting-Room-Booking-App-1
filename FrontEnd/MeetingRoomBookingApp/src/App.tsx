@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
     isActive
-      ? "bg-indigo-50 text-indigo-700"
+      ? "bg-gray-300 text-black"
       : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
   }`;
 
@@ -83,12 +83,12 @@ function App() {
             >
               Sign up 
             </NavLink></> : 
-            <div className="flex flex-col">
+            <div className="flex flex-col rounded-lg bg-gray-300 p-3 outline-2">
               <div>
                   Name: {userName}
               </div>
               <div>
-                  Role: {role}
+                  Role: {role=='admin' ? 'Admin' : 'User'}
               </div>
             </div>
             }
