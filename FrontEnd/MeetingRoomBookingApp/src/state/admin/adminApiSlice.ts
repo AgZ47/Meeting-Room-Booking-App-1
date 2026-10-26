@@ -21,6 +21,8 @@ type GetBookingsResponse = {
 
 type addRooms = Omit<roomsType, 'id' | 'is_active'>
 
+type updateRoomsType = Omit<roomsType, 'is_active'>
+
 export const adminApiSlice = createApi({
     reducerPath: 'adminapi',
     baseQuery: fetchBaseQuery({
@@ -53,7 +55,7 @@ export const adminApiSlice = createApi({
                 body: room
             })
         }),
-        updateRoom: builder.mutation<Partial<roomsType>, Partial<roomsType>>({
+        updateRoom: builder.mutation<Partial<roomsType>, updateRoomsType>({
             query: (updatedRoom) => ({
                 url: '/rooms',
                 method: 'PUT',

@@ -46,6 +46,7 @@ const addRoomSchema = z.object({
 })
 
 const updateRoomSchema = z.object({
+    id: z.number().int().positive(),
     name: z.string().trim().min(1).max(100),
     capacity: z.number().int().positive(),
     floor: z.number().int().min(0),
@@ -61,6 +62,41 @@ export const Rooms = () => {
     const [deactivateRoom] = useDeactivateRoomMutation()
     const [updateRoom] = useUpdateRoomMutation()
     const [addRoom] = useAddRoomMutation()
+
+    const rooms = data?.roomData ?? [];
+    const sortedrooms = [...rooms].sort((a, b) => a.id - b.id)
+
+    const roomAddForm = useForm({
+        defaultValues: {
+            name: '',
+            capacity: 1,
+            floor: 0,
+            facilities: ["AC"] as string[],
+            is_active: true,
+        },
+        onSubmit: async ({value}) => {
+            await addRoom(addRoomSchema.parse(value))
+            refetch();
+            setisAddOpen(false)
+            roomAddForm.reset()
+        }
+    })
+
+    const roomUpdateForm = useForm({
+        defaultValues: {
+            id: 0,
+            name: '',
+            capacity: 1,
+            floor: 0,
+            facilities: ["AC"] as string[],
+        },
+        onSubmit: async ({value}) => {
+            await updateRoom(updateRoomSchema.parse(value))
+            refetch();
+            setisUpdateOpen(false)
+            roomUpdateForm.reset()
+        }
+    })
 
     const handleDelete = async (rowData: rooms) => {
         await deactivateRoom(rowData.id).unwrap()
@@ -128,53 +164,24 @@ export const Rooms = () => {
             cell: (info) => {
                 return(<div className="flex gap-2">
                     <Button variant="outline" onClick={() => handleDelete(info.row.original)}>{info.row.original.is_active ? `Deactivate` : `Activate`}</Button>
-                    <Button variant="outline" onClick={() => setisUpdateOpen(true)}>Update</Button>
+                    <Button variant="outline" onClick={() => {
+                        setisUpdateOpen(true)
+                        roomUpdateForm.setFieldValue('id', info.row.original.id)
+                        roomUpdateForm.setFieldValue('name', info.row.original.name)
+                        roomUpdateForm.setFieldValue('floor', info.row.original.floor)
+                        roomUpdateForm.setFieldValue('capacity', info.row.original.capacity)
+                        roomUpdateForm.setFieldValue('facilities',info.row.original.facilities)
+                        }}>Update</Button>
                 </div>)
             }
         }
     ]
-
-    const rooms = data?.roomData ?? [];
-    const sortedrooms = [...rooms].sort((a, b) => a.id - b.id)
 
     const table = useTable({
         key: 'roomstable',
         features,
         columns,
         data: sortedrooms,
-    })
-
-    const roomAddForm = useForm({
-        defaultValues: {
-            name: '',
-            capacity: 1,
-            floor: 0,
-            facilities: ["AC"] as string[],
-            is_active: true,
-        },
-        onSubmit: async ({value}) => {
-            // await addRoom(addRoomSchema.parse(value))
-            await console.log(addRoomSchema.safeParse(value))
-            refetch();
-            setisAddOpen(false)
-            roomAddForm.reset()
-        }
-    })
-
-    const roomUpdateForm = useForm({
-        defaultValues: {
-            name: '',
-            capacity: 1,
-            floor: 0,
-            facilities: ["AC"] as string[],
-        },
-        onSubmit: async ({value}) => {
-            // await updateRoom(updateRoomSchema.parse(value))
-            await console.log(updateRoomSchema.safeParse(value))
-            refetch();
-            setisUpdateOpen(false)
-            roomUpdateForm.reset()
-        }
     })
 
     if(!token){
@@ -356,7 +363,10 @@ export const Rooms = () => {
                                 Enter meeting room details to add
                             </CardDescription>
                             <CardAction>
-                                <Button onClick={() => setisUpdateOpen(false)}>Cancel</Button>
+                                <Button onClick={() => {
+                                    setisUpdateOpen(false)
+                                    roomUpdateForm.reset()
+                                    }}>Cancel</Button>
                             </CardAction>
                         </CardHeader>
                         <CardContent>
