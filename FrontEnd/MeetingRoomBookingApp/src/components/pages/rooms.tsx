@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { useGetAllRoomsQuery } from "../../state/rooms/roomsApiSlice"
 import type { RootState } from "../../state/store";
-import { tableFeatures, useTable, type ColumnDef } from "@tanstack/react-table";
+import { tableFeatures, useTable, type CellContext, type ColumnDef } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
 import { useAddRoomMutation, useDeactivateRoomMutation, useUpdateRoomMutation } from "../../state/admin/adminApiSlice";
@@ -58,7 +58,7 @@ export const Rooms = () => {
     const [isUpdateOpen, setisUpdateOpen] = useState<boolean>(false)
     const token = useSelector((state: RootState) => state.auth.usertoken);
     const userRole = useSelector((state: RootState) => state.auth.role);
-    const { data, isLoading, isError, error, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
+    const { data, isLoading, isError, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
     const [deactivateRoom] = useDeactivateRoomMutation()
     const [updateRoom] = useUpdateRoomMutation()
     const [addRoom] = useAddRoomMutation()
@@ -104,343 +104,662 @@ export const Rooms = () => {
     }   
 
     const columns: Array<ColumnDef<typeof features, rooms>> = [
-        {
-            accessorKey: 'id',
-            id: 'id',
-            header:'ID',
-            cell: (info) => info.getValue()
+    {
+        accessorKey: "id",
+        id: "id",
+        header: "ID",
+        cell: (info) => (
+        <span className="font-mono text-sm text-muted-foreground">
+            #{info.getValue<number>()}
+        </span>
+        ),
+    },
+    {
+        accessorKey: "name",
+        id: "name",
+        header: "Room",
+        cell: (info) => (
+        <span className="font-semibold text-foreground">
+            {info.getValue<string>()}
+        </span>
+        ),
+    },
+    {
+        accessorKey: "capacity",
+        id: "capacity",
+        header: "Capacity",
+        cell: (info) => (
+        <span className="tabular-nums">
+            {info.getValue<number>()} people
+        </span>
+        ),
+    },
+    {
+        accessorKey: "floor",
+        id: "floor",
+        header: "Floor",
+        cell: (info) => (
+        <span className="text-muted-foreground">
+            Floor {info.getValue<number>()}
+        </span>
+        ),
+    },
+    {
+        accessorKey: "facilities",
+        id: "facilities",
+        header: "Facilities",
+        cell: (info) => {
+        const facilities = info.getValue<string[]>();
+
+        return (
+            <div className="flex flex-wrap gap-1.5">
+            {facilities.length ? (
+                facilities.map((facility) => (
+                <span
+                    key={facility}
+                    className="inline-flex rounded-md border bg-muted/40 px-2 py-1 text-xs font-medium"
+                >
+                    {facility}
+                </span>
+                ))
+            ) : (
+                <span className="text-sm text-muted-foreground">
+                None
+                </span>
+            )}
+            </div>
+        );
         },
-        {
-            accessorKey: 'name',
-            id: 'name',
-            header:'Name',
-            cell: (info) => info.getValue()
+    },
+    {
+        accessorKey: "is_active",
+        id: "is_active",
+        header: "Status",
+        cell: (info) => {
+        const active = info.getValue<boolean>();
+
+        return (
+            <span
+            className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                active
+                ? "border-foreground/20 bg-foreground/5 text-foreground"
+                : "border-muted-foreground/20 bg-muted text-muted-foreground"
+            }`}
+            >
+            <span
+                className={`size-1.5 rounded-full ${
+                active ? "bg-foreground" : "bg-muted-foreground/50"
+                }`}
+            />
+            {active ? "Active" : "Deactivated"}
+            </span>
+        );
         },
-        {
-            accessorKey: 'capacity',
-            id: 'capacity',
-            header:'Capacity',
-            cell: (info) => info.getValue()
-        },
-        {
-            accessorKey: 'floor',
-            id: 'floor',
-            header:'Floor',
-            cell: (info) => info.getValue()
-        },
-        {
-            accessorKey: 'facilities',
-            id: 'facilities',
-            header:'Facilities',
-            cell: (info) => {
-                return(
-                    <div className="flex flex-row gap-2">
-                        {info.getValue<string[]>().map((facility) => (
-                            <div key={facility} className="text-center">
-                                {facility},
-                            </div>
-                        ))}
-                    </div>
-                )
-            }
-        },
-        {
-            accessorKey: 'is_active',
-            id: 'is_active',
-            header:'Status',
-            cell: (info) => {
-                if(info.getValue() === true){
-                    return <div className="outline-2 outline-green-500 rounded-md text-center">Active</div>
-                }
-                if(info.getValue() === false){
-                    return <div className="outline-2 outline-red-500 rounded-md text-center">Deactivated</div>
-                }
-            }
-        },
-        {
-            accessorKey: 'action_room',
-            id: 'action_room',
-            header: 'Action',
-            cell: (info) => {
-                return(<div className="flex gap-2">
-                    <Button variant="outline" onClick={() => handleDelete(info.row.original)}>{info.row.original.is_active ? `Deactivate` : `Activate`}</Button>
-                    <Button variant="outline" onClick={() => {
-                        setisUpdateOpen(true)
-                        roomUpdateForm.setFieldValue('id', info.row.original.id)
-                        roomUpdateForm.setFieldValue('name', info.row.original.name)
-                        roomUpdateForm.setFieldValue('floor', info.row.original.floor)
-                        roomUpdateForm.setFieldValue('capacity', info.row.original.capacity)
-                        roomUpdateForm.setFieldValue('facilities',info.row.original.facilities)
-                        }}>Update</Button>
-                </div>)
-            }
-        }
-    ]
+    },
+    ...(userRole === "admin"
+        ? [
+            {
+            accessorKey: "action_room",
+            id: "action_room",
+            header: "Actions",
+            cell: (info: CellContext<{}, rooms, unknown>) => {
+                const room = info.row.original;
+
+                return (
+                <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={() => handleDelete(room)}
+                    >
+                    {room.is_active ? "Deactivate" : "Activate"}
+                    </Button>
+
+                    <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={() => {
+                        setisUpdateOpen(true);
+                        roomUpdateForm.setFieldValue("id", room.id);
+                        roomUpdateForm.setFieldValue("name", room.name);
+                        roomUpdateForm.setFieldValue("floor", room.floor);
+                        roomUpdateForm.setFieldValue("capacity", room.capacity);
+                        roomUpdateForm.setFieldValue(
+                        "facilities",
+                        room.facilities
+                        );
+                    }}
+                    >
+                    Update
+                    </Button>
+                </div>
+                );
+            },
+            },
+        ]
+        : []),
+    ];
 
     const table = useTable({
-        key: 'roomstable',
-        features,
-        columns,
-        data: sortedrooms,
-    })
+    key: "roomstable",
+    features,
+    columns,
+    data: sortedrooms,
+    });
 
-    if(!token){
-        return <div>Please login to view Rooms.</div>
+    if (!token) {
+    return (
+        <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
+        <h2 className="text-lg font-semibold">Login required</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+            Please log in to view meeting rooms.
+        </p>
+        </div>
+    );
     }
 
-    if(isLoading){
-        return(
-            <div className="p-auto font-bold text-center">Loding...</div>
-        )
+    if (isLoading) {
+    return (
+        <div className="mx-auto flex min-h-64 items-center justify-center">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
+            Loading meeting rooms...
+        </div>
+        </div>
+    );
     }
 
     if (isError) {
-        return (
-        <div>
-            <p>Failed to load bookings.</p>
-            <pre>{JSON.stringify(error, null, 2)}</pre>
-            <button onClick={() => refetch()}>Try again</button>
+    return (
+        <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
+        <h2 className="font-semibold">Unable to load rooms</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+            Something went wrong while retrieving the room list.
+        </p>
+        <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+            Try again
+        </Button>
         </div>
-        );
+    );
     }
 
-    return(
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle>
-                        Meeting Rooms
-                    </CardTitle>
-                    <CardDescription>
-                        View all Meeting Rooms
-                    </CardDescription>
-                    <CardAction>
-                        {userRole === "admin" ? <Button onClick={() => setisAddOpen(true)}>
-                            Add Room+
-                        </Button> : null}
-                    </CardAction>
-                </CardHeader>
-                <CardContent>
-                    {rooms.length !== 0 ? <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableCell key={header.id}>
-                                            {header.isPlaceholder ? null : (
-                                                <table.FlexRender header={header}/>
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
-                                {row.getAllCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                        <table.FlexRender cell={cell} />
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table> : 
-                    <div className="p-5 text-center">
-                        No rooms Available
-                    </div>
-                    }
-                </CardContent>
-            </Card>
-            <dialog open={isAddOpen} className="fixed inset-0 size-full z-50 bg-slate-950/50">
-                <div className="size-full flex justify-center items-center">
-                    <Card className="w-3/5">
-                        <CardHeader>
-                            <CardTitle>
-                                Add Rooms
-                            </CardTitle>
-                            <CardDescription>
-                                Enter meeting room details to add
-                            </CardDescription>
-                            <CardAction>
-                                <Button onClick={() => setisAddOpen(false)}>Cancel</Button>
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <form id="roomAdd-form" onSubmit={(e) => {
-                                e.preventDefault()
-                                roomAddForm.handleSubmit()
-                            }}>
-                                <div className="flex flex-col gap-6">
-                                    <div className="grid gap-2">
-                                        <label htmlFor="name">Room Name</label>
-                                        <roomAddForm.Field name="name">
-                                            {(field) => (
-                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="name" type="text" placeholder="Room Name" />
-                                            )}
-                                        </roomAddForm.Field>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <label htmlFor="capacity">Room Capacity</label>
-                                        <roomAddForm.Field name="capacity">
-                                            {(field) => (
-                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="capacity" type="number" placeholder="Room Capacity" />
-                                            )}
-                                        </roomAddForm.Field>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <label htmlFor="floor">Floor</label>
-                                        <roomAddForm.Field name="floor">
-                                            {(field) => (
-                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="floor" type="number" placeholder="Floor" />
-                                            )}
-                                        </roomAddForm.Field>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <roomAddForm.Field name="facilities">
-                                        {(field) => (
-                                            <div className="space-y-3">
-                                            <p className="font-medium">Facilities</p>
-
-                                            {availableFacilities.map((facility) => (
-                                                <label
-                                                key={facility}
-                                                className="flex items-center gap-2"
-                                                >
-                                                <Checkbox
-                                                    id={facility}
-                                                    checked={field.state.value.includes(facility)}
-                                                    onCheckedChange={(checked) => {
-                                                        if (checked) {
-                                                        field.pushValue(facility);
-                                                        } else {
-                                                        const index = field.state.value.indexOf(facility);
-
-                                                        if (index !== -1) {
-                                                            field.removeValue(index);
-                                                        }
-                                                        }
-                                                    }}
-                                                />
-                                                {facility}
-                                                </label>
-                                            ))}
-                                            </div>
-                                        )}
-                                        </roomAddForm.Field>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <label htmlFor="is_active">Status</label>
-                                        <roomAddForm.Field name="is_active">
-                                            {(field) => (
-                                                <RadioGroup value={String(field.state.value)} onValueChange={(value) => field.handleChange(value === "true")}>
-                                                    <RadioGroupItem value="true" id="active"/>
-                                                    <Label htmlFor="active">Activate</Label>
-                                                    <RadioGroupItem value="false" id="inactive"/>
-                                                    <Label htmlFor="inactive">Deactivate</Label>
-                                                </RadioGroup>
-                                            )}
-                                        </roomAddForm.Field>
-                                    </div>
-                                </div>
-                            </form>
-                        </CardContent>
-                        <CardFooter>
-                            <Button type="submit" form="roomAdd-form">Submit</Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-            </dialog>
-            <dialog open={isUpdateOpen} className="fixed inset-0 size-full z-50 bg-slate-950/50">
-                <div className="size-full flex justify-center items-center">
-                    <Card className="w-3/5">
-                        <CardHeader>
-                            <CardTitle>
-                                Update Room
-                            </CardTitle>
-                            <CardDescription>
-                                Enter meeting room details to add
-                            </CardDescription>
-                            <CardAction>
-                                <Button onClick={() => {
-                                    setisUpdateOpen(false)
-                                    roomUpdateForm.reset()
-                                    }}>Cancel</Button>
-                            </CardAction>
-                        </CardHeader>
-                        <CardContent>
-                            <form id="roomUpdate-form" onSubmit={(e) => {
-                                e.preventDefault()
-                                roomUpdateForm.handleSubmit()
-                            }}>
-                                <div className="flex flex-col gap-6">
-                                    <div className="grid gap-2">
-                                        <label htmlFor="name">Room Name</label>
-                                        <roomUpdateForm.Field name="name">
-                                            {(field) => (
-                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} id="name" type="text" placeholder="Room Name" />
-                                            )}
-                                        </roomUpdateForm.Field>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <label htmlFor="capacity">Room Capacity</label>
-                                        <roomUpdateForm.Field name="capacity">
-                                            {(field) => (
-                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="capacity" type="number" placeholder="Room Capacity" />
-                                            )}
-                                        </roomUpdateForm.Field>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <label htmlFor="floor">Floor</label>
-                                        <roomUpdateForm.Field name="floor">
-                                            {(field) => (
-                                            <Input className="w-2/5" value={field.state.value} onChange={(e) => field.handleChange(Number(e.target.value))} id="floor" type="number" placeholder="Floor" />
-                                            )}
-                                        </roomUpdateForm.Field>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <roomUpdateForm.Field name="facilities">
-                                        {(field) => (
-                                            <div className="space-y-3">
-                                            <p className="font-medium">Facilities</p>
-
-                                            {availableFacilities.map((facility) => (
-                                                <label
-                                                key={facility}
-                                                className="flex items-center gap-2"
-                                                >
-                                                <Checkbox
-                                                    id={facility}
-                                                    checked={field.state.value.includes(facility)}
-                                                    onCheckedChange={(checked) => {
-                                                        if (checked) {
-                                                        field.pushValue(facility);
-                                                        } else {
-                                                        const index = field.state.value.indexOf(facility);
-
-                                                        if (index !== -1) {
-                                                            field.removeValue(index);
-                                                        }
-                                                        }
-                                                    }}
-                                                />
-                                                {facility}
-                                                </label>
-                                            ))}
-                                            </div>
-                                        )}
-                                        </roomUpdateForm.Field>
-                                    </div>
-                                </div>
-                            </form>
-                        </CardContent>
-                        <CardFooter>
-                            <Button type="submit" form="roomUpdate-form">Submit</Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-            </dialog>
+    return (
+    <div className="mx-auto w-full max-w-7xl space-y-6 p-4 sm:p-6">
+        {/* Page heading */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Workspace / Resources
+            </p>
+            <h1 className="text-3xl font-semibold tracking-tight">
+            Meeting rooms
+            </h1>
+            <p className="text-sm text-muted-foreground">
+            Browse rooms, check facilities, and manage availability.
+            </p>
         </div>
-    )
+
+        {userRole === "admin" && (
+            <Button
+            className="w-full sm:w-auto"
+            onClick={() => setisAddOpen(true)}
+            >
+            <span className="mr-2 text-lg">+</span>
+            Add room
+            </Button>
+        )}
+        </div>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="gap-2 py-5">
+            <CardContent className="space-y-1">
+            <p className="text-sm text-muted-foreground">Total rooms</p>
+            <p className="text-3xl font-semibold tabular-nums">
+                {rooms.length}
+            </p>
+            </CardContent>
+        </Card>
+
+        <Card className="gap-2 py-5">
+            <CardContent className="space-y-1">
+            <p className="text-sm text-muted-foreground">Active rooms</p>
+            <p className="text-3xl font-semibold tabular-nums">
+                {rooms.filter((room) => room.is_active).length}
+            </p>
+            </CardContent>
+        </Card>
+
+        <Card className="gap-2 py-5">
+            <CardContent className="space-y-1">
+            <p className="text-sm text-muted-foreground">Deactivated rooms</p>
+            <p className="text-3xl font-semibold tabular-nums">
+                {rooms.filter((room) => !room.is_active).length}
+            </p>
+            </CardContent>
+        </Card>
+        </div>
+
+        {/* Rooms table */}
+        <Card className="gap-0 overflow-hidden py-0">
+        <CardHeader className="border-b py-5">
+            <div className="space-y-1">
+            <CardTitle>All rooms</CardTitle>
+            <CardDescription>
+                Room details and available facilities, ordered by room ID.
+            </CardDescription>
+            </div>
+            <CardAction>
+            <span className="rounded-full border px-3 py-1 text-xs font-medium">
+                {rooms.length} {rooms.length === 1 ? "room" : "rooms"}
+            </span>
+            </CardAction>
+        </CardHeader>
+
+        {rooms.length > 0 ? (
+            <>
+            <div className="overflow-x-auto">
+                <Table>
+                <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow
+                        key={headerGroup.id}
+                        className="bg-muted/40 hover:bg-muted/40"
+                    >
+                        {headerGroup.headers.map((header) => (
+                        <TableCell
+                            key={header.id}
+                            className="h-11 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                        >
+                            {header.isPlaceholder
+                            ? null
+                            : <table.FlexRender header={header} />}
+                        </TableCell>
+                        ))}
+                    </TableRow>
+                    ))}
+                </TableHeader>
+
+                <TableBody>
+                    {table.getRowModel().rows.map((row) => (
+                    <TableRow
+                        key={row.id}
+                        className="transition-colors hover:bg-muted/30"
+                    >
+                        {row.getAllCells().map((cell) => (
+                        <TableCell
+                            key={cell.id}
+                            className="py-4 align-middle"
+                        >
+                            <table.FlexRender cell={cell} />
+                        </TableCell>
+                        ))}
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
+
+            <CardFooter className="justify-between border-t py-4 text-xs text-muted-foreground">
+                <span>Showing all {rooms.length} rooms</span>
+                <span>Sorted by ID</span>
+            </CardFooter>
+            </>
+        ) : (
+            <CardContent className="flex flex-col items-center justify-center px-6 py-16 text-center">
+            <div className="mb-4 flex size-14 items-center justify-center rounded-full border bg-muted/30 text-2xl">
+                —
+            </div>
+            <h3 className="font-semibold">No rooms yet</h3>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                Rooms will appear here once they have been added to your workspace.
+            </p>
+            {userRole === "admin" && (
+                <Button
+                variant="outline"
+                className="mt-5"
+                onClick={() => setisAddOpen(true)}
+                >
+                Add your first room
+                </Button>
+            )}
+            </CardContent>
+        )}
+        </Card>
+
+        {/* Add room dialog */}
+        {isAddOpen && (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setisAddOpen(false);
+            }}
+        >
+            <Card className="max-h-[90vh] w-full max-w-2xl gap-0 overflow-hidden py-0 shadow-2xl">
+            <CardHeader className="border-b py-5">
+                <CardTitle className="text-xl">Add a room</CardTitle>
+                <CardDescription>
+                Enter the room details and choose its facilities.
+                </CardDescription>
+                <CardAction>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                    setisAddOpen(false);
+                    roomUpdateForm.reset();
+                    }}
+                    className="flex items-center justify-center"
+                >
+                    X
+                </Button>
+                </CardAction>
+            </CardHeader>
+
+            <CardContent className="overflow-y-auto p-5 sm:p-6">
+                <form
+                id="roomAdd-form"
+                className="space-y-6"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    roomAddForm.handleSubmit();
+                }}
+                >
+                <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="add-name">Room name</Label>
+                    <roomAddForm.Field name="name">
+                        {(field) => (
+                        <Input
+                            id="add-name"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="e.g. Conference Room A"
+                            required
+                        />
+                        )}
+                    </roomAddForm.Field>
+                    </div>
+
+                    <div className="space-y-2">
+                    <Label htmlFor="add-capacity">Capacity</Label>
+                    <roomAddForm.Field name="capacity">
+                        {(field) => (
+                        <Input
+                            id="add-capacity"
+                            type="number"
+                            min={1}
+                            value={field.state.value}
+                            onChange={(e) =>
+                            field.handleChange(Number(e.target.value))
+                            }
+                            required
+                        />
+                        )}
+                    </roomAddForm.Field>
+                    </div>
+
+                    <div className="space-y-2">
+                    <Label htmlFor="add-floor">Floor</Label>
+                    <roomAddForm.Field name="floor">
+                        {(field) => (
+                        <Input
+                            id="add-floor"
+                            type="number"
+                            min={0}
+                            value={field.state.value}
+                            onChange={(e) =>
+                            field.handleChange(Number(e.target.value))
+                            }
+                            required
+                        />
+                        )}
+                    </roomAddForm.Field>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <div>
+                    <Label>Facilities</Label>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Select all facilities available in this room.
+                    </p>
+                    </div>
+
+                    <roomAddForm.Field name="facilities">
+                    {(field) => (
+                        <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
+                        {availableFacilities.map((facility, index) => (
+                            <label
+                            key={facility}
+                            className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-muted/50"
+                            >
+                            <Checkbox
+                                id={`add-facility-${index}`}
+                                checked={field.state.value.includes(facility)}
+                                onCheckedChange={(checked) => {
+                                if (checked === true) {
+                                    if (!field.state.value.includes(facility)) {
+                                    field.pushValue(facility);
+                                    }
+                                } else {
+                                    const index =
+                                    field.state.value.indexOf(facility);
+                                    if (index !== -1) field.removeValue(index);
+                                }
+                                }}
+                            />
+                            {facility}
+                            </label>
+                        ))}
+                        </div>
+                    )}
+                    </roomAddForm.Field>
+                </div>
+
+                <div className="space-y-3">
+                    <Label>Initial status</Label>
+                    <roomAddForm.Field name="is_active">
+                    {(field) => (
+                        <RadioGroup
+                        className="grid grid-cols-2 gap-3"
+                        value={String(field.state.value)}
+                        onValueChange={(value) =>
+                            field.handleChange(value === "true")
+                        }
+                        >
+                        <label
+                            htmlFor="add-active"
+                            className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 hover:bg-muted/40"
+                        >
+                            <RadioGroupItem value="true" id="add-active" />
+                            <span className="text-sm font-medium">Active</span>
+                        </label>
+                        <label
+                            htmlFor="add-inactive"
+                            className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 hover:bg-muted/40"
+                        >
+                            <RadioGroupItem value="false" id="add-inactive" />
+                            <span className="text-sm font-medium">Inactive</span>
+                        </label>
+                        </RadioGroup>
+                    )}
+                    </roomAddForm.Field>
+                </div>
+                </form>
+            </CardContent>
+
+            <CardFooter className="justify-end gap-2 border-t py-4">
+                <Button
+                variant="outline"
+                onClick={() => {
+                    setisAddOpen(false);
+                    roomAddForm.reset();
+                }}
+                >
+                Cancel
+                </Button>
+                <Button type="submit" form="roomAdd-form">
+                Create room
+                </Button>
+            </CardFooter>
+            </Card>
+        </div>
+        )}
+
+        {/* Update room dialog */}
+        {isUpdateOpen && (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+                setisUpdateOpen(false);
+                roomUpdateForm.reset();
+            }
+            }}
+        >
+            <Card className="max-h-[90vh] w-full max-w-2xl gap-0 overflow-hidden py-0 shadow-2xl">
+            <CardHeader className="border-b py-5">
+                <CardTitle className="text-xl">Update room</CardTitle>
+                <CardDescription>
+                Change the room details and facilities.
+                </CardDescription>
+                <CardAction>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                    setisUpdateOpen(false);
+                    roomUpdateForm.reset();
+                    }}
+                    className="flex items-center justify-center"
+                >
+                    X
+                </Button>
+                </CardAction>
+            </CardHeader>
+
+            <CardContent className="overflow-y-auto p-5 sm:p-6">
+                <form
+                id="roomUpdate-form"
+                className="space-y-6"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    roomUpdateForm.handleSubmit();
+                }}
+                >
+                <div className="space-y-2">
+                    <Label htmlFor="update-name">Room name</Label>
+                    <roomUpdateForm.Field name="name">
+                    {(field) => (
+                        <Input
+                        id="update-name"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        required
+                        />
+                    )}
+                    </roomUpdateForm.Field>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2">
+                    <Label htmlFor="update-capacity">Capacity</Label>
+                    <roomUpdateForm.Field name="capacity">
+                        {(field) => (
+                        <Input
+                            id="update-capacity"
+                            type="number"
+                            min={1}
+                            value={field.state.value}
+                            onChange={(e) =>
+                            field.handleChange(Number(e.target.value))
+                            }
+                            required
+                        />
+                        )}
+                    </roomUpdateForm.Field>
+                    </div>
+
+                    <div className="space-y-2">
+                    <Label htmlFor="update-floor">Floor</Label>
+                    <roomUpdateForm.Field name="floor">
+                        {(field) => (
+                        <Input
+                            id="update-floor"
+                            type="number"
+                            min={0}
+                            value={field.state.value}
+                            onChange={(e) =>
+                            field.handleChange(Number(e.target.value))
+                            }
+                            required
+                        />
+                        )}
+                    </roomUpdateForm.Field>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <div>
+                    <Label>Facilities</Label>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Update the facilities available in this room.
+                    </p>
+                    </div>
+
+                    <roomUpdateForm.Field name="facilities">
+                    {(field) => (
+                        <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
+                        {availableFacilities.map((facility, index) => (
+                            <label
+                            key={facility}
+                            className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-muted/50"
+                            >
+                            <Checkbox
+                                id={`update-facility-${index}`}
+                                checked={field.state.value.includes(facility)}
+                                onCheckedChange={(checked) => {
+                                if (checked === true) {
+                                    if (!field.state.value.includes(facility)) {
+                                    field.pushValue(facility);
+                                    }
+                                } else {
+                                    const index =
+                                    field.state.value.indexOf(facility);
+                                    if (index !== -1) field.removeValue(index);
+                                }
+                                }}
+                            />
+                            {facility}
+                            </label>
+                        ))}
+                        </div>
+                    )}
+                    </roomUpdateForm.Field>
+                </div>
+                </form>
+            </CardContent>
+
+            <CardFooter className="justify-end gap-2 border-t py-4">
+                <Button
+                variant="outline"
+                onClick={() => {
+                    setisUpdateOpen(false);
+                    roomUpdateForm.reset();
+                }}
+                >
+                Cancel
+                </Button>
+                <Button type="submit" form="roomUpdate-form">
+                Save changes
+                </Button>
+            </CardFooter>
+            </Card>
+        </div>
+        )}
+    </div>
+    );
 }
