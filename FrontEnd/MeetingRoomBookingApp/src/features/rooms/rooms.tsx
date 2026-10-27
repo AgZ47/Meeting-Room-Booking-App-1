@@ -2,17 +2,17 @@ import { useSelector } from "react-redux";
 import { useGetAllRoomsQuery } from "../../state/rooms/roomsApiSlice"
 import type { RootState } from "../../state/store";
 import { tableFeatures, useTable, type CellContext, type ColumnDef } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../ui/table";
-import { Button } from "../ui/button";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../common/ui/table";
+import { Button } from "../../common/ui/button";
 import { useAddRoomMutation, useDeactivateRoomMutation, useUpdateRoomMutation } from "../../state/admin/adminApiSlice";
 import { useState } from "react";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../common/ui/card";
 import { useForm } from "@tanstack/react-form";
 import {z} from "zod"
-import { Input } from "../ui/input";
-import { Checkbox } from "../ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Field, FieldDescription, FieldLabel } from "../ui/field";
+import { Input } from "../../common/ui/input";
+import { Checkbox } from "../../common/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "../../common/ui/radio-group";
+import { Field, FieldDescription, FieldLabel } from "../../common/ui/field";
 
 const features = tableFeatures({})
 

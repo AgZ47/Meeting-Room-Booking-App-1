@@ -1,9 +1,9 @@
-import { LoginPage } from "./components/pages/loginPage";
+import { LoginPage } from "./features/auth/loginPage";
 import { Routes, Route, NavLink } from "react-router-dom";
-import { RegisterPage } from "./components/pages/registerPage";
-import { AdminBookings } from "./components/pages/adminBookings";
-import { Rooms } from "./components/pages/rooms";
-import { Bookings } from "./components/pages/bookings";
+import { RegisterPage } from "./features/auth/registerPage";
+import { AdminBookings } from "./features/adminBookings/adminBookings";
+import { Rooms } from "./features/rooms/rooms";
+import { Bookings } from "./features/bookings/bookings";
 import type { RootState } from "./state/store";
 import { useSelector } from "react-redux";
 

@@ -27,7 +27,7 @@ export class AuthService {
     async registerUser(body: userRegisterBody){
         body.password_hash = await bcrypt.hash(body.password_hash, 10);
 
-        const userData = await this.database.db.insert(usersTable).values({name: body.name, email: body.email, password_hash: body.password_hash, role: body.role}).returning();
+        const userData = await this.database.db.insert(usersTable).values({name: body.name, email: body.email.toLowerCase(), password_hash: body.password_hash, role: body.role}).returning();
 
         const token = await this.jwtService.signAsync({id: userData[0].id, role: userData[0].role});
 

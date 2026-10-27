@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { authApiSlice } from "./auth/authApiSlice";
-import authReducer from "./auth/authSlice"
-import { adminApiSlice } from "./admin/adminApiSlice";
-import { roomsApiSlice } from "./rooms/roomsApiSlice";
-import { bookingsApiSlice } from "./bookings/bookingsApiSlice";
+import { authApiSlice } from "../features/auth/api/authApiSlice";
+import authReducer from "../features/auth/api/authSlice"
+import { adminApiSlice } from "../features/adminBookings/api/adminApiSlice";
+import { roomsApiSlice } from "../features/rooms/api/roomsApiSlice";
+import { bookingsApiSlice } from "../features/bookings/api/bookingsApiSlice";
 
 export const store = configureStore({
     reducer: {

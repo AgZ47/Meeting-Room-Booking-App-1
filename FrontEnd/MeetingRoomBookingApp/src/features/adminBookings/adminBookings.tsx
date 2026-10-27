@@ -4,9 +4,9 @@ import type { RootState } from "../../state/store";
 import { useTable, tableFeatures } from "@tanstack/react-table"
 import type { CellContext, ColumnDef } from "@tanstack/react-table";
 import type { bookingsFetchType } from "../../state/bookings/bookingsApiSlice";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table";
+import { Button } from "../../common/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "../../common/ui/card";
 
 const features = tableFeatures({})
 
