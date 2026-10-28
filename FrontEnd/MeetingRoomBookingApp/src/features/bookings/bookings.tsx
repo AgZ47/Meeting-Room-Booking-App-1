@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux"
-import { useCancelUserBookingMutation, useGetAllUserBookingsQuery, usePostUserBookingMutation, type bookingsFetchType } from "../../state/bookings/bookingsApiSlice"
-import type { RootState } from "../../state/store"
+import { useCancelUserBookingMutation, useGetAllUserBookingsQuery, usePostUserBookingMutation, type bookingsFetchType } from "./api/bookingsApiSlice"
+import type { RootState } from "../../common/store"
 import { tableFeatures, useTable, type CellContext } from "@tanstack/react-table"
 import { column as adminBookingsColumns } from "../adminBookings/adminBookings"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table"
@@ -37,7 +37,7 @@ export const Bookings = () => {
             header: 'Options',
             cell: (info: CellContext<{}, bookingsFetchType, unknown>) => 
             <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
-                    cancelData({id: info.row.original.id})
+                    cancelData({id: info.row.original.bookingId})
                     refetch();
                 }}>
                 Cancel Booking

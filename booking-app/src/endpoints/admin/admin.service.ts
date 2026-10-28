@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
 import type { CreateRoomDto } from './dto/create-room.dto.js';
-import { roomsTable, bookingsTable } from '../../db/index.js';
+import { roomsTable, bookingsTable, usersTable } from '../../db/index.js';
 import { JwtService } from '@nestjs/jwt';
 import { and, eq, sql } from 'drizzle-orm';
 
@@ -78,7 +78,20 @@ export class AdminService {
     async getAllBookings(authHeader: string){
         await this.verifyAdmin(authHeader);
 
-        const bookingData = await this.database.db.select().from(bookingsTable);
+        const bookingData = await this.database.db
+        .select({
+            bookingId: bookingsTable.id,
+            bookingDate: bookingsTable.booking_date,
+            startTime: bookingsTable.start_time,
+            endTime: bookingsTable.end_time,
+            status: bookingsTable.status,
+            purpose: bookingsTable.purpose,
+            userName: usersTable.name,
+            roomName: roomsTable.name,
+        })
+        .from(bookingsTable)
+        .innerJoin(usersTable, eq(bookingsTable.user_id, usersTable.id))
+        .innerJoin(roomsTable, eq(bookingsTable.room_id, roomsTable.id));
 
         return {bookingData: bookingData, message: "Bookings retrieved successfully"};
     }

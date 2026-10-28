@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "../store";
+import type { RootState } from "../../../common/store";
+import type { bookingsResponse } from "../../adminBookings/api/adminApiSlice";
 
-export type bookingsFetchType = {
+export type bookingsReturnType = {
     id: number,
     room_id: number,
     user_id: number,
@@ -13,7 +14,18 @@ export type bookingsFetchType = {
     created_at: string,
 }
 
-type bookingsPostType = Omit<bookingsFetchType, 'id'|'created_at'|'status'|'user_id'> & {}
+export type bookingsFetchType = {
+    bookingId: number,
+    bookingDate: string,
+    startTime: string,
+    endTime: string,
+    status: string,
+    purpose: string,
+    userName: string,
+    roomName: string
+}
+
+type bookingsPostType = Omit<bookingsReturnType, 'id'|'created_at'|'status'|'user_id'> & {}
 
 type bookingsCancelType = {
     id: number,
@@ -32,17 +44,17 @@ export const bookingsApiSlice = createApi({
         }
     }),
     endpoints: (builder) => ({
-        getAllUserBookings: builder.query<{data: bookingsFetchType[], message: string},void>({
+        getAllUserBookings: builder.query<{data: bookingsResponse[], message: string},void>({
             query: () => '/bookings/me',
         }),
-        postUserBooking: builder.mutation<{data: bookingsFetchType, message: string}, bookingsPostType>({
+        postUserBooking: builder.mutation<{data: bookingsReturnType, message: string}, bookingsPostType>({
             query: (booking) => ({
                 url: '/bookings',
                 method:'POST',
                 body: booking,
             })
         }),
-        cancelUserBooking: builder.mutation<{data: bookingsFetchType, message:string},bookingsCancelType>({
+        cancelUserBooking: builder.mutation<{data: bookingsReturnType, message:string},bookingsCancelType>({
             query:(bookingId) => ({
                 url: `/bookings/${bookingId.id}/cancel`,
                 method:'PUT',

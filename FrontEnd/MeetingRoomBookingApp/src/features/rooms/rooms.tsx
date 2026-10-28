@@ -1,10 +1,10 @@
 import { useSelector } from "react-redux";
-import { useGetAllRoomsQuery } from "../../state/rooms/roomsApiSlice"
-import type { RootState } from "../../state/store";
-import { tableFeatures, useTable, type CellContext, type ColumnDef } from "@tanstack/react-table";
+import { useGetAllRoomsQuery } from "./api/roomsApiSlice"
+import type { RootState } from "../../common/store";
+import { tableFeatures, useTable, type CellContext, type ColumnDef, columnVisibilityFeature } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
-import { useAddRoomMutation, useDeactivateRoomMutation, useUpdateRoomMutation } from "../../state/admin/adminApiSlice";
+import { useAddRoomMutation, useDeactivateRoomMutation, useUpdateRoomMutation } from "../adminBookings/api/adminApiSlice";
 import { useState } from "react";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../common/ui/card";
 import { useForm } from "@tanstack/react-form";
@@ -13,8 +13,11 @@ import { Input } from "../../common/ui/input";
 import { Checkbox } from "../../common/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../common/ui/radio-group";
 import { Field, FieldDescription, FieldLabel } from "../../common/ui/field";
+import { Plus, ShieldCheck, ShieldX, SquarePen } from "lucide-react";
 
-const features = tableFeatures({})
+const features = tableFeatures({
+    columnVisibilityFeature,
+})
 
 type rooms = {
     id: number,
@@ -106,13 +109,7 @@ export const Rooms = () => {
     const columns: Array<ColumnDef<typeof features, rooms>> = [
     {
         accessorKey: "id",
-        id: "id",
         header: "ID",
-        cell: (info) => (
-        <span className="font-mono text-sm text-muted-foreground">
-            #{info.getValue<number>()}
-        </span>
-        ),
     },
     {
         accessorKey: "name",
@@ -180,17 +177,12 @@ export const Rooms = () => {
 
         return (
             <span
-            className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium ${
+            className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium border-foreground/20 bg-foreground/5 text-foreground ${
                 active
-                ? "border-foreground/20 bg-foreground/5 text-foreground"
-                : "border-muted-foreground/20 bg-muted text-muted-foreground"
+                ? " bg-green-100"
+                : " bg-red-100"
             }`}
             >
-            <span
-                className={`size-1.5 rounded-full ${
-                active ? "bg-foreground" : "bg-muted-foreground/50"
-                }`}
-            />
             {active ? "Active" : "Deactivated"}
             </span>
         );
@@ -202,7 +194,7 @@ export const Rooms = () => {
             accessorKey: "action_room",
             id: "action_room",
             header: "Actions",
-            cell: (info: CellContext<{}, rooms, unknown>) => {
+            cell: (info: CellContext<typeof features, rooms, unknown>) => {
                 const room = info.row.original;
 
                 return (
@@ -213,7 +205,7 @@ export const Rooms = () => {
                     className="h-8"
                     onClick={() => handleDelete(room)}
                     >
-                    {room.is_active ? "Deactivate" : "Activate"}
+                    {room.is_active ? <ShieldX color="red"/> : <ShieldCheck color="green"/>}
                     </Button>
 
                     <Button
@@ -232,7 +224,7 @@ export const Rooms = () => {
                         );
                     }}
                     >
-                    Update
+                        <SquarePen/>
                     </Button>
                 </div>
                 );
@@ -243,10 +235,15 @@ export const Rooms = () => {
     ];
 
     const table = useTable({
-    key: "roomstable",
-    features,
-    columns,
-    data: sortedrooms,
+        key: "roomstable",
+        features,
+        columns,
+        data: sortedrooms,
+        initialState: {
+        columnVisibility: {
+                id: false,
+            },
+        },
     });
 
     if (!token) {
@@ -286,7 +283,7 @@ export const Rooms = () => {
     }
 
     return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 p-4 sm:p-6">
+    <div className="mx-auto w-full space-y-6 p-4 sm:p-6">
         {/* Page heading */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
@@ -296,18 +293,15 @@ export const Rooms = () => {
             <h1 className="text-3xl font-semibold tracking-tight">
             Meeting rooms
             </h1>
-            <p className="text-sm text-muted-foreground">
-            Browse rooms, check facilities, and manage availability.
-            </p>
         </div>
 
         {userRole === "admin" && (
             <Button
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto bg-sky-600 text-white"
             onClick={() => setisAddOpen(true)}
             >
-            <span className="mr-2 text-lg">+</span>
-            Add room
+                <Plus/>
+                Add room
             </Button>
         )}
         </div>
@@ -343,21 +337,7 @@ export const Rooms = () => {
         </div>
 
         {/* Rooms table */}
-        <Card className="gap-0 overflow-hidden py-0">
-        <CardHeader className="border-b py-5">
-            <div className="space-y-1">
-            <CardTitle>All rooms</CardTitle>
-            <CardDescription>
-                Room details and available facilities, ordered by room ID.
-            </CardDescription>
-            </div>
-            <CardAction>
-            <span className="rounded-full border px-3 py-1 text-xs font-medium">
-                {rooms.length} {rooms.length === 1 ? "room" : "rooms"}
-            </span>
-            </CardAction>
-        </CardHeader>
-
+        <Card className="gap-0 overflow-hidden py-0 rounded-md">
         {rooms.length > 0 ? (
             <>
             <div className="overflow-x-auto">
@@ -371,7 +351,7 @@ export const Rooms = () => {
                         {headerGroup.headers.map((header) => (
                         <TableCell
                             key={header.id}
-                            className="h-11 whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                            className="h-11 whitespace-nowrap text-xs font-semibold uppercase tracking-wide bg-sky-600 text-white px-3 border-r border-sky-100 last:border-r-0"
                         >
                             {header.isPlaceholder
                             ? null
@@ -388,10 +368,10 @@ export const Rooms = () => {
                         key={row.id}
                         className="transition-colors hover:bg-muted/30"
                     >
-                        {row.getAllCells().map((cell) => (
+                        {row.getVisibleCells().map((cell) => (
                         <TableCell
                             key={cell.id}
-                            className="py-4 align-middle"
+                            className="py-4 align-middle px-3 border-r border-gray-200 last:border-r-0"
                         >
                             <table.FlexRender cell={cell} />
                         </TableCell>

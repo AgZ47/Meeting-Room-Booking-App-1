@@ -1,4 +1,4 @@
-import { date, integer, pgEnum, pgTable, serial, time, timestamp, varchar } from "drizzle-orm/pg-core";
+import { date, index, integer, pgEnum, pgTable, serial, time, timestamp, varchar } from "drizzle-orm/pg-core";
 import { roomsTable } from "./rooms.schema.js";
 import { usersTable } from "./users.schema.js";
 
@@ -14,4 +14,10 @@ export const bookingsTable = pgTable("bookings", {
     purpose: varchar({length: 255}).notNull(),
     status: statusEnum().default("confirmed").notNull(),
     created_at: timestamp({withTimezone: true}).defaultNow().notNull(),
-})
+},(table) => [
+    index("booking_user_id_idx").on(table.user_id),
+    
+    index("booking_room_id_idx").on(table.room_id),
+    
+    index("booking_room_date_idx").on(table.room_id, table.booking_date),
+])

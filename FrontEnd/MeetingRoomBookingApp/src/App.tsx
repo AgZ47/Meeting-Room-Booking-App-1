@@ -4,107 +4,115 @@ import { RegisterPage } from "./features/auth/registerPage";
 import { AdminBookings } from "./features/adminBookings/adminBookings";
 import { Rooms } from "./features/rooms/rooms";
 import { Bookings } from "./features/bookings/bookings";
-import type { RootState } from "./state/store";
+import type { RootState } from "./common/store";
 import { useSelector } from "react-redux";
+import { CalendarRange, LogIn, Presentation, ShieldCheck, User, UserPlus } from "lucide-react";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
-    isActive
-      ? "bg-gray-300 text-black"
-      : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-  }`;
+    `flex items-center gap-4 rounded-lg p-3 text-sm font-medium transition-colors overflow-hidden ${
+      isActive
+        ? "bg-white text-sky-700 font-semibold shadow-sm"
+        : "text-white/80 hover:bg-sky-500 hover:text-white"
+    }`;
 
 function App() {
   const role = useSelector((state: RootState) => state.auth.role)
   const userName = useSelector((state: RootState) => state.auth.name)
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Top navigation */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-        <nav className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-3">
-          {/* Brand */}
-          <NavLink to="/rooms" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-mist-950 text-lg font-bold text-white shadow-sm">
-              M
-            </div>
-            <div>
-              <span className="block text-lg font-bold tracking-tight text-slate-900">
-                MeetSpace
-              </span>
-              <span className="block text-xs text-slate-500">
-                Room booking
-              </span>
-            </div>
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Left Sidebar - Added `group`, width transitions, and whitespace-nowrap */}
+      <aside className="group sticky top-0 flex h-screen flex-col overflow-hidden whitespace-nowrap border-r border-slate-200 bg-sky-600 px-4 py-6 shadow-sm transition-all duration-300 w-20 hover:w-64 z-50">
+        
+        {/* Brand */}
+        <NavLink to="/rooms" className="mb-8 flex items-center gap-4 px-1">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xl font-bold text-white shadow-sm transition-all">
+            M
+          </div>
+          <span className="text-xl font-bold tracking-tight text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            MeetSpace
+          </span>
+        </NavLink>
+
+        {/* Main navigation */}
+        <nav className="flex flex-1 flex-col gap-3">
+          <NavLink to="/rooms" className={navLinkClass}>
+            <Presentation className="size-6 shrink-0" />
+            <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Rooms</span>
           </NavLink>
 
-          {/* Main navigation */}
-          <div className="flex flex-wrap items-center gap-1">
-            <NavLink to="/rooms" className={navLinkClass}>
-              Rooms
+          <NavLink to="/bookings/me" className={navLinkClass}>
+            <CalendarRange className="size-6 shrink-0" />
+            <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">My Bookings</span>
+          </NavLink>
+          
+          {role && role === "admin" && (
+            <NavLink to="/admin/bookings" className={navLinkClass}>
+              <ShieldCheck className="size-6 shrink-0" />
+              <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Admin</span>
             </NavLink>
+          )}
+        </nav>
 
-            <NavLink to="/bookings/me" className={navLinkClass}>
-              My Bookings
-            </NavLink>
-            
-            {role && role === "admin" ? 
-              <NavLink to="/admin/bookings" className={navLinkClass}>
-                Admin
+        {/* Authentication / User Profile */}
+        <div className="mt-auto flex flex-col gap-2 border-t border-sky-400 pt-4">
+          {!role ? (
+            <>
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                  `flex items-center gap-4 rounded-lg p-3 text-sm font-semibold transition overflow-hidden ${
+                    isActive
+                      ? "bg-white text-sky-700 shadow-sm"
+                      : "text-white hover:bg-sky-500"
+                  }`
+                }
+              >
+                <LogIn className="size-6 shrink-0" />
+                <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Log in</span>
               </NavLink>
-             : null}
-            
-          </div>
-
-          {/* Authentication links */}
-          <div className="flex items-center gap-2">
-            {!role ? <><NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                `rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? "text-mist-950"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-mist-950"
-                }`
-              }
-            >
-              Log in
-            </NavLink>
-            <NavLink
-              to="/register"
-              className={({ isActive }) =>
-                `rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                  isActive
-                    ? "bg-mist-700 text-white"
-                    : "bg-slate-950 text-white shadow-sm hover:bg-slate-700"
-                }`
-              }
-            >
-              Sign up 
-            </NavLink></> : 
-            <div className="flex flex-col rounded-lg bg-gray-300 p-3 outline-2">
-              <div>
-                  Name: {userName}
-              </div>
-              <div>
-                  Role: {role=='admin' ? 'Admin' : 'User'}
+              <NavLink
+                to="/register"
+                className={({ isActive }) =>
+                  `flex items-center gap-4 rounded-lg p-3 text-sm font-semibold transition overflow-hidden ${
+                    isActive
+                      ? "bg-slate-900 text-white shadow-sm"
+                      : "bg-slate-950 text-white shadow-sm hover:bg-slate-800"
+                  }`
+                }
+              >
+                <UserPlus className="size-6 shrink-0" />
+                <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Sign up</span>
+              </NavLink>
+            </>
+          ) : (
+            <div className="flex items-center gap-4 rounded-xl bg-sky-700/50 px-2 border border-sky-500 overflow-hidden">
+              <User className="size-6 shrink-0 text-white" />
+              <div className="flex flex-col opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <span className="text-sm font-semibold text-white truncate">
+                  {userName}
+                </span>
+                <span className="text-xs font-medium text-sky-200 uppercase tracking-wider">
+                  {role === 'admin' ? 'Admin' : 'User'}
+                </span>
               </div>
             </div>
-            }
-          </div>
-        </nav>
-      </header>
+          )}
+        </div>
+      </aside>
 
       {/* Page content */}
-      <main className="mx-auto max-w-7xl px-6 py-8">
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/admin/bookings" element={<AdminBookings />} />
-          <Route path="/rooms" element={<Rooms />} />
-          <Route path="/bookings/me" element={<Bookings />} />
-        </Routes>
+      <main className="flex-1 h-screen overflow-y-auto">
+        <div className="w-full px-8 py-8">
+          <Routes>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/admin/bookings" element={<AdminBookings />} />
+            <Route path="/rooms" element={<Rooms />} />
+            <Route path="/bookings/me" element={<Bookings />} />
+          </Routes>
+        </div>
       </main>
     </div>
   );

@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { DatabaseService } from '../../database/database.service.js';
 import type { CreateBookingDto } from './dto/create-booking.dto.js';
 import { JwtService } from '@nestjs/jwt';
-import { bookingsTable } from '../../db/index.js';
+import { bookingsTable, roomsTable, usersTable } from '../../db/index.js';
 import {and, eq, DrizzleQueryError} from 'drizzle-orm';
 
 @Injectable()
@@ -60,7 +60,20 @@ export class BookingsService {
             throw new UnauthorizedException("Invalid token");
         }
         
-        const bookingsData = await this.database.db.select().from(bookingsTable).where(eq(bookingsTable.user_id, id));
+        const bookingsData = await this.database.db
+        .select({
+            bookingId: bookingsTable.id,
+            bookingDate: bookingsTable.booking_date,
+            startTime: bookingsTable.start_time,
+            endTime: bookingsTable.end_time,
+            status: bookingsTable.status,
+            purpose: bookingsTable.purpose,
+            userName: usersTable.name,
+            roomName: roomsTable.name,
+        })
+        .from(bookingsTable).where(eq(bookingsTable.user_id, id))
+        .innerJoin(usersTable, eq(bookingsTable.user_id, usersTable.id))
+        .innerJoin(roomsTable, eq(bookingsTable.room_id, roomsTable.id));
 
         return { data: bookingsData, message:" Successfully fetched all bookings of the user" };
     }

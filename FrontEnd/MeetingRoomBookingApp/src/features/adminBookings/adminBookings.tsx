@@ -1,48 +1,42 @@
 import { useSelector } from "react-redux";
-import { useCancelBookingMutation, useDeleteBookingMutation, useGetBookingsQuery } from "../../state/admin/adminApiSlice";
-import type { RootState } from "../../state/store";
+import { useCancelBookingMutation, useDeleteBookingMutation, useGetBookingsQuery } from "./api/adminApiSlice";
+import type { RootState } from "../../common/store";
 import { useTable, tableFeatures } from "@tanstack/react-table"
 import type { CellContext, ColumnDef } from "@tanstack/react-table";
-import type { bookingsFetchType } from "../../state/bookings/bookingsApiSlice";
+import type {bookingsResponse} from "./api/adminApiSlice"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "../../common/ui/card";
 
 const features = tableFeatures({})
 
-export const column: ColumnDef<typeof features, bookingsFetchType>[] = [
+export const column: ColumnDef<typeof features, bookingsResponse>[] = [
   {
-    accessorKey: 'id',
-    id: 'id',
-    header: 'ID',
+    accessorKey:'userName',
+    id:'userName',
+    header: 'User Name',
     cell: (info) => info.getValue(),
   },
   {
-    accessorKey:'user_id',
-    id:'user_id',
-    header: 'User ID',
+    accessorKey: 'roomName',
+    id: 'roomName',
+    header: 'Room Name',
     cell: (info) => info.getValue(),
   },
   {
-    accessorKey: 'room_id',
-    id: 'room_id',
-    header: 'Room ID',
-    cell: (info) => info.getValue(),
-  },
-  {
-    accessorKey: 'booking_date',
+    accessorKey: 'bookingDate',
     id: 'booking_date',
     header: 'Booking Date',
     cell: (info) => info.getValue(),
   },
   {
-    accessorKey: 'start_time',
+    accessorKey: 'startTime',
     id: 'start_time',
     header: 'Start Time',
     cell: (info) => info.getValue(),
   },
   {
-    accessorKey: 'end_time',
+    accessorKey: 'endTime',
     id: 'end_time',
     header: 'End Time',
     cell: (info) => info.getValue(),
@@ -59,13 +53,13 @@ export const column: ColumnDef<typeof features, bookingsFetchType>[] = [
     header: 'Status',
     cell: (info) => {
       if(info.getValue() === 'confirmed'){
-        return (<div className="outline-2 outline-green-500 rounded-lg text-center">{info.getValue<string>()}</div>)
+        return (<div className="outline-2 outline-green-500 rounded-lg text-center p-2">{info.getValue<string>()}</div>)
       }
       if(info.getValue() === 'cancelled'){
-        return(<div className="outline-2 outline-red-500 rounded-lg text-center">{info.getValue<string>()}</div>)
+        return(<div className="outline-2 outline-red-500 rounded-lg text-center p-2">{info.getValue<string>()}</div>)
       }
       if(info.getValue() === 'completed'){
-        return(<div className="outline-2 outline-blue-500 rounded-lg text-center">{info.getValue<string>()}</div>)
+        return(<div className="outline-2 outline-blue-500 rounded-lg text-center p-2">{info.getValue<string>()}</div>)
       }
     },
   },
@@ -82,15 +76,14 @@ export const column: ColumnDef<typeof features, bookingsFetchType>[] = [
 
 export const AdminBookings = () => {
   const token = useSelector((state: RootState) => state.auth.usertoken);
-  const { data, isLoading, isError, error, refetch} = useGetBookingsQuery(undefined, { skip: !token });
+  const { data, isLoading, isError, refetch} = useGetBookingsQuery(undefined, { skip: !token });
   const [ cancelBooking ] = useCancelBookingMutation();
   const [ deleteBooking ] = useDeleteBookingMutation();
 
   const columns = [...column, {
-    accessorKey: 'cancel_booking',
-    id: 'cancel_booking',
+    id: 'actions',
     header: 'Options',
-    cell: (info: CellContext<{}, bookingsFetchType, unknown>) => 
+    cell: (info: CellContext<{}, bookingsResponse, unknown>) => 
     <div>
       <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
               cancelBooking(info.row.original.id)
@@ -99,7 +92,7 @@ export const AdminBookings = () => {
           Cancel Booking
       </Button>
       <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
-              const result = deleteBooking(info.row.original.id)
+              deleteBooking(info.row.original.id)
               refetch();
           }}>
           Delete Booking

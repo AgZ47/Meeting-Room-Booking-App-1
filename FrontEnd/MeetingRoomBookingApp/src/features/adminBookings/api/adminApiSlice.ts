@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "../store";
-import type { roomsType } from "../rooms/roomsApiSlice";
+import type { RootState } from "../../../common/store";
+import type { roomsType } from "../../rooms/api/roomsApiSlice";
 
 type Booking = {
   id: number;
@@ -14,8 +14,13 @@ type Booking = {
   created_at: string;
 };
 
+export type bookingsResponse = Omit<Booking, 'room_id'|'user_id'> & {
+    room_id: string,
+    user_id: string
+}
+
 type GetBookingsResponse = {
-  bookingData: Booking[];
+  bookingData: bookingsResponse[];
   message: string;
 };
 
