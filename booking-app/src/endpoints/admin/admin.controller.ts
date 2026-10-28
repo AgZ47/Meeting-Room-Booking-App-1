@@ -1,9 +1,11 @@
-import { Body, Controller, Post, Put, Delete, Get, Headers, Param, Header, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Post, Put, Delete, Get, Headers, Param, Header, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { createRoomSchema, updateRoomSchema, type CreateRoomDto } from './dto/create-room.dto.js';
 import { AdminService } from './admin.service.js';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
+import { RbacauthGuard } from '../../common/guards/rbacauth/rbacauth.guard.js';
 
 @Controller('admin')
+@UseGuards(RbacauthGuard)
 export class AdminController {
     constructor(private adminService:AdminService){}
 

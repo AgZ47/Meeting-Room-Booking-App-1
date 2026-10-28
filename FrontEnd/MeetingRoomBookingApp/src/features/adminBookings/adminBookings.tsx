@@ -7,7 +7,7 @@ import type {bookingsResponse} from "./api/adminApiSlice"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
 import { Card, CardFooter} from "../../common/ui/card";
-import { SquareX, Trash } from "lucide-react";
+import { RotateCcw, SquareX, Trash } from "lucide-react";
 import { useMemo } from "react";
 
 export const features = tableFeatures({
@@ -183,13 +183,19 @@ export const AdminBookings = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* Page Header */}
-      <div className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Workspace / Resources
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-          All Bookings
-        </h1>
+      <div className="flex flex-row justify-between">
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Workspace / Resources
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+            All Bookings
+          </h1>
+        </div>
+        <Button className="bg-sky-600" onClick={() => refetch()}>
+          Refresh
+          <RotateCcw/>
+        </Button>
       </div>
 
       {/* Summary Cards */}
