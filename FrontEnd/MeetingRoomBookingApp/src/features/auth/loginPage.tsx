@@ -69,7 +69,7 @@ export const LoginPage = () => {
             <div className="mx-auto flex min-h-64 items-center justify-center">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
-                Loading meeting rooms...
+                Loading...
             </div>
             </div>
         );
@@ -79,10 +79,10 @@ export const LoginPage = () => {
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
             <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle>Login to your account</CardTitle>
+                <CardTitle>Login</CardTitle>
                 <CardDescription>Enter your credentials to access your account</CardDescription>
                 <CardAction>
-                    <Button id='navigate to signup' onClick={() => navigate('/register')}>SignUp</Button>
+                    <Button className="bg-sky-600" id='navigate to signup' onClick={() => navigate('/register')}>SignUp</Button>
                 </CardAction>
             </CardHeader>
             <CardContent>
@@ -128,7 +128,7 @@ export const LoginPage = () => {
                 </form>
             </CardContent>
             <CardFooter>
-                <Button type='submit' form="login-form">Submit</Button>
+                <Button className="bg-sky-600" type='submit' form="login-form">Login</Button>
             </CardFooter>
             </Card>
         </div>

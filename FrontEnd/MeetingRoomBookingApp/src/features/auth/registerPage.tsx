@@ -52,8 +52,17 @@ export const RegisterPage = () => {
                 return
             }
 
-            // const result = await registerUser(inputSchema.parse(value)).unwrap()
-            // dispatch(setCredentials({usertoken: result.usertoken, name: result.name, role: result.role}))
+            try{
+
+                const result = await registerUser(inputSchema.parse(value)).unwrap()
+
+                dispatch(setCredentials({usertoken: result.usertoken, name: result.name, role: result.role}))
+                
+                navigate('/rooms')
+
+            }catch(err){
+                console.log(err)
+            }
 
         }
     })
@@ -62,10 +71,10 @@ export const RegisterPage = () => {
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
             <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle>Login to your account</CardTitle>
-                <CardDescription>Enter your credentials to access your account</CardDescription>
+                <CardTitle>Sign Up</CardTitle>
+                <CardDescription>Enter your credentials to create your account</CardDescription>
                 <CardAction>
-                <Button onClick={() => navigate('/')}>Login</Button>
+                <Button className="bg-sky-600" onClick={() => navigate('/')}>Login</Button>
                 </CardAction>
             </CardHeader>
             <CardContent>
@@ -101,7 +110,7 @@ export const RegisterPage = () => {
                     <div className="grid gap-2">
                         <div className="flex items-center">
                             <label htmlFor="password">Password</label>
-                            <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
+                            <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-sky-600">
                             Forgot your password?
                             </a>
                         </div>
@@ -119,7 +128,7 @@ export const RegisterPage = () => {
                 </form>
             </CardContent>
             <CardFooter>
-                <Button type='submit' form="login-form">Submit</Button>
+                <Button className="bg-sky-600" type='submit' form="login-form">Sign Up</Button>
             </CardFooter>
             </Card>
         </div>
