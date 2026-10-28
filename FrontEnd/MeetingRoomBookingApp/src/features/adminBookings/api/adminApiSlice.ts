@@ -14,15 +14,25 @@ type Booking = {
   created_at: string;
 };
 
-export type bookingsResponse = Omit<Booking, 'room_id'|'user_id'> & {
-    room_id: string,
-    user_id: string
+export type bookingsResponse = Omit<Booking, 'room_id'|'user_id'|'id'> & {
+    roomName: string,
+    userName: string,
+    bookingId: number
 }
 
 type GetBookingsResponse = {
   bookingData: bookingsResponse[];
   message: string;
 };
+
+// "bookingId": 21,
+// "bookingDate": "2026-10-27",
+// "startTime": "15:30:00",
+// "endTime": "16:30:00",
+// "status": "cancelled",
+// "purpose": "what is the purpose of a meeting",
+// "userName": "Aby Iype",
+// "roomName": "Gemba2"
 
 type addRooms = Omit<roomsType, 'id' | 'is_active'>
 

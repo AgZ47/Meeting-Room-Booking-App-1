@@ -7,8 +7,9 @@ import type {bookingsResponse} from "./api/adminApiSlice"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "../../common/ui/card";
+import { SquareX } from "lucide-react";
 
-const features = tableFeatures({})
+export const features = tableFeatures({})
 
 export const column: ColumnDef<typeof features, bookingsResponse>[] = [
   {
@@ -84,15 +85,13 @@ export const AdminBookings = () => {
     id: 'actions',
     header: 'Options',
     cell: (info: CellContext<{}, bookingsResponse, unknown>) => 
-    <div>
-      <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
-              cancelBooking(info.row.original.id)
+    <div className="flex flex-row">
+          <SquareX color="red" onClick={() => {
+              cancelBooking(info.row.original.bookingId)
               refetch();
-          }}>
-          Cancel Booking
-      </Button>
+          }}/>
       <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
-              deleteBooking(info.row.original.id)
+              deleteBooking(info.row.original.bookingId)
               refetch();
           }}>
           Delete Booking
@@ -101,7 +100,7 @@ export const AdminBookings = () => {
   }]
 
   const bookings = data?.bookingData ?? [];
-  const sortedBookings = [...bookings].sort((a,b) => a.id-b.id)
+  const sortedBookings = [...bookings].sort((a,b) => a.bookingId-b.bookingId)
 
   const table = useTable({
     key: 'bookingstable',
@@ -115,7 +114,7 @@ export const AdminBookings = () => {
         <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
         <h2 className="text-lg font-semibold">Login required</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-            Please log in to view meeting rooms.
+            Please log in to view all bookings.
         </p>
         </div>
     );
@@ -126,7 +125,7 @@ export const AdminBookings = () => {
         <div className="mx-auto flex min-h-64 items-center justify-center">
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
-            Loading meeting rooms...
+            Loading All Bookings...
         </div>
         </div>
     );
@@ -135,9 +134,9 @@ export const AdminBookings = () => {
     if (isError) {
     return (
         <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
-        <h2 className="font-semibold">Unable to load rooms</h2>
+        <h2 className="font-semibold">Unable to load bookings</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-            Something went wrong while retrieving the room list.
+            Something went wrong while retrieving the bookings list.
         </p>
         <Button className="mt-5" variant="outline" onClick={() => refetch()}>
             Try again

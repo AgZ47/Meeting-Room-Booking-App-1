@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux"
-import { useCancelUserBookingMutation, useGetAllUserBookingsQuery, usePostUserBookingMutation, type bookingsFetchType } from "./api/bookingsApiSlice"
+import { useCancelUserBookingMutation, useGetAllUserBookingsQuery, usePostUserBookingMutation} from "./api/bookingsApiSlice"
 import type { RootState } from "../../common/store"
 import { tableFeatures, useTable, type CellContext } from "@tanstack/react-table"
 import { column as adminBookingsColumns } from "../adminBookings/adminBookings"
@@ -12,6 +12,8 @@ import { Input } from "../../common/ui/input"
 import { Field, FieldLabel } from "../../common/ui/field"
 import { Textarea } from "../../common/ui/textarea"
 import {z} from "zod"
+import { features as adminBookingsFeatures } from "../adminBookings/adminBookings"
+import type { bookingsResponse } from "../adminBookings/api/adminApiSlice"
 
 const features = tableFeatures({})
 
@@ -35,7 +37,7 @@ export const Bookings = () => {
             accessorKey: 'cancel_booking',
             id: 'cancel_booking',
             header: 'Options',
-            cell: (info: CellContext<{}, bookingsFetchType, unknown>) => 
+            cell: (info: CellContext<typeof adminBookingsFeatures, bookingsResponse, unknown>) => 
             <Button className="bg-red-500 hover:bg-red-900" onClick={() => {
                     cancelData({id: info.row.original.bookingId})
                     refetch();
@@ -46,7 +48,7 @@ export const Bookings = () => {
     ]
 
     const bookings = data?.data ?? []
-    const sortedBookings = [...bookings].sort((a,b) => a.id - b.id)
+    const sortedBookings = [...bookings].sort((a,b) => a.bookingId - b.bookingId)
 
     const addBookingForm = useForm({
         defaultValues: {
