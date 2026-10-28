@@ -177,10 +177,10 @@ export const Rooms = () => {
 
         return (
             <span
-            className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium border-foreground/20 bg-foreground/5 text-foreground ${
+            className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs ${
                 active
-                ? " bg-green-100"
-                : " bg-red-100"
+                ? " bg-green-100 text-green-500"
+                : " bg-red-100 text-red-500"
             }`}
             >
             {active ? "Active" : "Deactivated"}

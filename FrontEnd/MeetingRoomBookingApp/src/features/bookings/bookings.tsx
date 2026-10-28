@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux"
 import { useCancelUserBookingMutation, useGetAllUserBookingsQuery, usePostUserBookingMutation} from "./api/bookingsApiSlice"
 import type { RootState } from "../../common/store"
-import { tableFeatures, useTable, type CellContext } from "@tanstack/react-table"
+import { tableFeatures, useTable, type CellContext, columnVisibilityFeature } from "@tanstack/react-table"
 import { column as adminBookingsColumns } from "../adminBookings/adminBookings"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table"
 import { Card, CardContent, CardFooter, CardHeader } from "../../common/ui/card"
@@ -15,7 +15,9 @@ import {z} from "zod"
 import { features as adminBookingsFeatures } from "../adminBookings/adminBookings"
 import type { bookingsResponse } from "../adminBookings/api/adminApiSlice"
 
-const features = tableFeatures({})
+const features = tableFeatures({
+    columnVisibilityFeature
+})
 
 const meetingBookingSchema = z.object({
     room_id: z.number().int().positive(),
@@ -78,6 +80,11 @@ export const Bookings = () => {
         features,
         columns,
         data: sortedBookings,
+        initialState:{
+            columnVisibility:{
+                bookingId: false
+            }
+        }
     })
 
     if (!token) {
@@ -141,7 +148,7 @@ export const Bookings = () => {
                         <TableBody>
                             {table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id}>
-                                {row.getAllCells().map((cell) => (
+                                {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>
                                     <table.FlexRender cell={cell} />
                                     </TableCell>
