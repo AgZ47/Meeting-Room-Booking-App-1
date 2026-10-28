@@ -22,7 +22,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Left Sidebar - Added `group`, width transitions, and whitespace-nowrap */}
-      <aside className="group sticky top-0 flex h-screen flex-col overflow-hidden whitespace-nowrap border-r border-slate-200 px-4 py-6 shadow-sm transition-all duration-300 w-20 hover:w-64 z-50 bg-linear-to-t from-sky-600 via-sky-700 to-sky-600 ">
+      <aside className="group sticky top-0 flex h-screen flex-col overflow-hidden whitespace-nowrap border-r border-slate-200 px-4 py-6 shadow-sm transition-all duration-300 w-20 hover:w-64 z-50 bg-linear-to-t from-sky-600 from-10% via-sky-700 via-40% to-sky-600 to-90%">
         
         {/* Brand */}
         <NavLink to="/rooms" className="mb-8 flex items-center gap-4 px-1">
