@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
 import type { CreateBookingDto } from './dto/create-booking.dto.js';
 import { bookingsTable, roomsTable, usersTable } from '../../db/index.js';
@@ -8,10 +8,10 @@ import {and, eq, DrizzleQueryError} from 'drizzle-orm';
 export class BookingsService {
     constructor(private readonly database: DatabaseService){}
 
-    async bookRoomSlot(createBookingDto: CreateBookingDto, id: number){
+    async bookRoomSlot(createBookingDto: CreateBookingDto, userId: number){
         console.log("Booking room...");
 
-        const storeVal = {...createBookingDto, user_id: id}
+        const storeVal = {...createBookingDto, user_id: userId}
 
         if(storeVal.start_time >= storeVal.end_time){
             throw new BadRequestException("Invalid time range: start_time must be before end_time");
@@ -27,8 +27,11 @@ export class BookingsService {
         }
     }
 
-    async getAllUserBookings(id: number){
-        if(!id){
+    async getAllUserBookings(userId: number){
+
+        console.log(userId)
+
+        if(!userId){
             throw new UnauthorizedException("Invalid token");
         }
         
@@ -43,7 +46,7 @@ export class BookingsService {
             userName: usersTable.name,
             roomName: roomsTable.name,
         })
-        .from(bookingsTable).where(eq(bookingsTable.user_id, id))
+        .from(bookingsTable).where(eq(bookingsTable.user_id, userId))
         .innerJoin(usersTable, eq(bookingsTable.user_id, usersTable.id))
         .innerJoin(roomsTable, eq(bookingsTable.room_id, roomsTable.id));
 
