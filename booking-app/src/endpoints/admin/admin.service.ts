@@ -9,39 +9,13 @@ import { and, eq, sql } from 'drizzle-orm';
 export class AdminService {
     constructor(private readonly database: DatabaseService, private readonly jwtService: JwtService){}
 
-    private async verifyAdmin(authHeader: string){
-        const [scheme, token] = authHeader?.split(' ') ?? [];
-        
-        if(!token || scheme !== 'Bearer'){
-            throw new UnauthorizedException("Invalid authorization header");
-        }
-
-        let payload: {role? : string};
-
-        try{
-            payload = await this.jwtService.verifyAsync<{role?: string}>(token);
-        }catch(error){
-            throw new UnauthorizedException("Invalid or expired token");
-        }
-
-        if(payload.role !== 'admin'){
-            throw new ForbiddenException("Unauthorized: Only admin can perform this action");
-        }
-    }
-
-    async addRoom(createRoomDto: CreateRoomDto, authHeader: string){
-        
-        await this.verifyAdmin(authHeader);
-
+    async addRoom(createRoomDto: CreateRoomDto){
         const roomData = await this.database.db.insert(roomsTable).values(createRoomDto).returning();
 
         return {roomData: roomData, message: "Room added successfully"};
     }
 
-    async updateRoom(updateRoomDto: CreateRoomDto, authHeader: string){
-        
-        await this.verifyAdmin(authHeader);
-
+    async updateRoom(updateRoomDto: CreateRoomDto){
         const {id, ...updateData} = updateRoomDto;
 
         if(id === undefined){
@@ -58,10 +32,7 @@ export class AdminService {
         return {roomData: roomData, message: "Room updated successfully"};
     }
 
-    async deactivateRoom(roomId: number, authHeader: string){
-
-        await this.verifyAdmin(authHeader);
-
+    async deactivateRoom(roomId: number){
         if(roomId === undefined){
             throw new UnauthorizedException("Room ID is required for deactivation");
         }
@@ -75,8 +46,7 @@ export class AdminService {
         return {roomData: roomData, message: "Room deactivated successfully"};
     }
 
-    async getAllBookings(authHeader: string){
-        await this.verifyAdmin(authHeader);
+    async getAllBookings(){
 
         const bookingData = await this.database.db
         .select({
@@ -96,8 +66,7 @@ export class AdminService {
         return {bookingData: bookingData, message: "Bookings retrieved successfully"};
     }
 
-    async cancelBooking(bookingId: number, authHeader: string){
-        await this.verifyAdmin(authHeader);
+    async cancelBooking(bookingId: number){
 
         const bookingData = await this.database.db.update(bookingsTable).set({status: 'cancelled'}).where(eq(bookingsTable.id, bookingId)).returning();
 
@@ -108,8 +77,7 @@ export class AdminService {
         return {bookingData: bookingData, message: "Booking cancelled successfully"};
     }
 
-    async deleteBooking(bookingId: number, authHeader: string){
-        await this.verifyAdmin(authHeader);
+    async deleteBooking(bookingId: number){
 
         const bookingData = await this.database.db.delete(bookingsTable).where(eq(bookingsTable.id, bookingId)).returning();
 

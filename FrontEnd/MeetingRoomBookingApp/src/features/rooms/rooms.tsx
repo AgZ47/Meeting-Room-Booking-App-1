@@ -201,7 +201,7 @@ export const Rooms = () => {
                 <div className="flex flex-wrap items-center gap-2">
                     <button
                         title={room.is_active ? "Deactivate Room" : "Activate Room"}
-                        className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
+                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
                         room.is_active 
                             ? "text-red-500 hover:bg-red-50 hover:text-red-700" 
                             : "text-green-500 hover:bg-green-50 hover:text-green-700"

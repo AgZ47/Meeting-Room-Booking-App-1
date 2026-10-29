@@ -26,7 +26,7 @@ function App() {
         
         {/* Brand */}
         <NavLink to="/rooms" className="mb-8 flex items-center gap-4 px-1">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xl font-bold text-white shadow-sm transition-all">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-yellow-500 text-xl font-bold text-white shadow-sm transition-all">
             M
           </div>
           <span className="text-xl font-bold tracking-tight text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
