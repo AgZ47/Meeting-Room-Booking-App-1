@@ -1,40 +1,15 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
 import type { CreateBookingDto } from './dto/create-booking.dto.js';
-import { JwtService } from '@nestjs/jwt';
 import { bookingsTable, roomsTable, usersTable } from '../../db/index.js';
 import {and, eq, DrizzleQueryError} from 'drizzle-orm';
 
 @Injectable()
 export class BookingsService {
-    constructor(private readonly database: DatabaseService, private readonly jwtService: JwtService){}
+    constructor(private readonly database: DatabaseService){}
 
-    async verifyUser(authHeader: string){
-        const [scheme, token] = authHeader?.split(' ') ?? [];
-
-        if(!token || scheme !== 'Bearer'){
-            throw new UnauthorizedException("Invalid authorization header");
-        }
-
-        let payload: {id?: number, role? : string};
-        
-        try{
-            payload = await this.jwtService.verifyAsync<{role?: string}>(token);
-        }catch(error){
-            throw new UnauthorizedException("Invalid or expired token");
-        }
-
-        if((payload.role === 'admin' || payload.role === 'user') && typeof payload.id === 'number'){
-            return payload.id;   
-        }else{
-            throw new ForbiddenException("Unauthorized: Only authorized admin and users can perform this action");
-        }
-    }
-
-    async bookRoomSlot(createBookingDto: CreateBookingDto, authHeader: string){
+    async bookRoomSlot(createBookingDto: CreateBookingDto, id: number){
         console.log("Booking room...");
-
-        const id = await this.verifyUser(authHeader);
 
         const storeVal = {...createBookingDto, user_id: id}
 
@@ -52,10 +27,7 @@ export class BookingsService {
         }
     }
 
-    async getAllUserBookings(authHeader: string){
-
-        const id = await this.verifyUser(authHeader);
-
+    async getAllUserBookings(id: number){
         if(!id){
             throw new UnauthorizedException("Invalid token");
         }
@@ -78,8 +50,7 @@ export class BookingsService {
         return { data: bookingsData, message:" Successfully fetched all bookings of the user" };
     }
 
-    async cancelRoomBooking(authHeader: string, bookingId: number){
-        const userId = await this.verifyUser(authHeader);
+    async cancelRoomBooking(userId: number, bookingId: number){
 
         console.log("Canceling booking...");
 

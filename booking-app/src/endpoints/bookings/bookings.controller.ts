@@ -1,24 +1,29 @@
-import { Controller, Post, Get, Body, Headers, Put, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Body, Headers, Put, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { BookingsService } from './bookings.service.js';
 import { roomBookingsSchema, type CreateBookingDto } from './dto/create-booking.dto.js';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
+import { RbacAuthGuard } from '../../common/guards/rbacauth/rbacauth.guard.js';
+import { Roles } from '../../common/roles.decorator.js';
+import { GetUser } from '../../common/getUser.decorator.js';
 
 @Controller('bookings')
+@UseGuards(RbacAuthGuard)
+@Roles('user','admin')
 export class BookingsController {
     constructor(private bookingsService:BookingsService){}
 
     @Put(':id/cancel')
-    cancelRoomBooking(@Param('id', ParseIntPipe) bookingId: number, @Headers('Authorization') authHeader: string){
-        return this.bookingsService.cancelRoomBooking(authHeader, bookingId);
+    cancelRoomBooking(@Param('id', ParseIntPipe) bookingId: number, @GetUser('sub') userId: number){
+        return this.bookingsService.cancelRoomBooking(userId, bookingId);
     }
 
     @Post()
-    bookRoomSlot(@Body( new ZodValidationPipe(roomBookingsSchema)) createBookingDto: CreateBookingDto, @Headers('Authorization') authHeader: string){
-        return this.bookingsService.bookRoomSlot(createBookingDto, authHeader);
+    bookRoomSlot(@Body( new ZodValidationPipe(roomBookingsSchema)) createBookingDto: CreateBookingDto, @GetUser('sub') userId: number){
+        return this.bookingsService.bookRoomSlot(createBookingDto, userId);
     }
 
     @Get('me')
-    getAllMyBookings(@Headers('Authorization') authHeader: string){
-        return this.bookingsService.getAllUserBookings(authHeader);
+    getAllMyBookings(@GetUser('sub') userId: number){
+        return this.bookingsService.getAllUserBookings(userId);
     }
 }

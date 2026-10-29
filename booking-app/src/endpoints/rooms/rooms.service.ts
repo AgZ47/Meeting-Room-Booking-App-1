@@ -30,16 +30,14 @@ export class RoomsService {
         }
     }
 
-    async getAllRooms(authHeader: string){
-        await this.verifyUser(authHeader);
+    async getAllRooms(){
 
         const roomData = await this.database.db.select().from(roomsTable);
 
         return {roomData: roomData, message: "Rooms retrieved successfully"};
     }
 
-    async getRoomByFilter(authHeader: string, status: string){
-        await this.verifyUser(authHeader);
+    async getRoomByFilter(status: string){
 
         if(status !== 'active' && status !== 'inactive'){
             throw new BadRequestException("Invalid status must be either 'active' or 'inactive'");

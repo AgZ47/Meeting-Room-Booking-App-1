@@ -1,13 +1,12 @@
-import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
 import type { CreateRoomDto } from './dto/create-room.dto.js';
 import { roomsTable, bookingsTable, usersTable } from '../../db/index.js';
-import { JwtService } from '@nestjs/jwt';
-import { and, eq, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 @Injectable()
 export class AdminService {
-    constructor(private readonly database: DatabaseService, private readonly jwtService: JwtService){}
+    constructor(private readonly database: DatabaseService){}
 
     async addRoom(createRoomDto: CreateRoomDto){
         const roomData = await this.database.db.insert(roomsTable).values(createRoomDto).returning();
