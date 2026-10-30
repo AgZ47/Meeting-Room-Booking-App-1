@@ -21,6 +21,8 @@ const features = tableFeatures({
     columnVisibilityFeature,
 })
 
+type modal = "addRoom" | "updateRoom" | "editFacilities" | null
+
 type rooms = {
     id: number,
     name: string,
@@ -29,18 +31,6 @@ type rooms = {
     facilities: string[], 
     is_active: boolean,
 }
-
-const availableFacilities = [
-  "TV", 
-  "Projector", 
-  "Video Conferencing system", 
-  "WhiteBoard", 
-  "Smart Board", 
-  "AC", 
-  "Sound Proof", 
-  "Coffee Bar", 
-  "Accessibility+"
-];
 
 const addRoomSchema = z.object({
     name: z.string().trim().min(1).max(100),
@@ -59,13 +49,25 @@ const updateRoomSchema = z.object({
 })
 
 export const Rooms = () => {
-    const [isUpdateOpen, setisUpdateOpen] = useState<boolean>(false)
+    const [activeModal, setActiveModal] = useState<modal>(null)
     const token = useSelector((state: RootState) => state.auth.usertoken);
     const userRole = useSelector((state: RootState) => state.auth.role);
     const { data, isLoading, isError, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
     const [deactivateRoom] = useDeactivateRoomMutation()
     const [updateRoom] = useUpdateRoomMutation()
     const [addRoom] = useAddRoomMutation()
+
+    const availableFacilities = [
+        "TV", 
+        "Projector", 
+        "Video Conferencing system", 
+        "WhiteBoard", 
+        "Smart Board", 
+        "AC", 
+        "Sound Proof", 
+        "Coffee Bar", 
+        "Accessibility+"
+    ];
 
     const rooms = data?.roomData ?? [];
     const sortedrooms = [...rooms].sort((a, b) => a.id - b.id)
@@ -96,10 +98,20 @@ export const Rooms = () => {
         onSubmit: async ({value}) => {
             await updateRoom(updateRoomSchema.parse(value))
             refetch();
-            setisUpdateOpen(false)
             roomUpdateForm.reset()
         }
     })
+
+    const facilityAddForm = useForm({
+        defaultValues: {
+            name: "",   
+        },
+        onSubmit: async ({ value }) => {
+            // await onSubmitFacility(value);
+            console.log(value);
+            facilityAddForm.reset();
+        },
+    });
 
     const handleDelete = async (rowData: rooms) => {
         await deactivateRoom(rowData.id).unwrap()
@@ -219,19 +231,21 @@ export const Rooms = () => {
                     </HoverCard>
                     <HoverCard>
                         <HoverCardTrigger delay={100} closeDelay={100} render={
-                            <button
-                                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
-                                onClick={() => {
-                                setisUpdateOpen(true);
-                                roomUpdateForm.setFieldValue("id", room.id);
-                                roomUpdateForm.setFieldValue("name", room.name);
-                                roomUpdateForm.setFieldValue("floor", room.floor);
-                                roomUpdateForm.setFieldValue("capacity", room.capacity);
-                                roomUpdateForm.setFieldValue("facilities", room.facilities);
-                                }}
-                            >
-                                <SquarePen className="size-5" />
-                            </button>
+                            <DialogTrigger>
+                                <button
+                                    className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
+                                    onClick={() => {
+                                    setActiveModal("updateRoom")
+                                    roomUpdateForm.setFieldValue("id", room.id);
+                                    roomUpdateForm.setFieldValue("name", room.name);
+                                    roomUpdateForm.setFieldValue("floor", room.floor);
+                                    roomUpdateForm.setFieldValue("capacity", room.capacity);
+                                    roomUpdateForm.setFieldValue("facilities", room.facilities);
+                                    }}
+                                >
+                                    <SquarePen className="size-5" />
+                                </button>
+                            </DialogTrigger>
                         }/>
                         <HoverCardContent side="top">
                             <div>
@@ -300,23 +314,28 @@ export const Rooms = () => {
     <div className="mx-auto w-full space-y-6 p-4 sm:p-6">
         {/* Page heading */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Workspace / Resources
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight">
-            Meeting rooms
-            </h1>
-        </div>
-
-        {userRole === "admin" && (
-            <DialogTrigger render={
-                <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" >
-                    <Plus/>
-                    Add room
-                </Button>
-            }/>
-        )}
+            <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Workspace / Resources
+                </p>
+                <h1 className="text-3xl font-semibold tracking-tight">
+                Meeting rooms
+                </h1>
+            </div>
+                {userRole === "admin" && (
+                    <DialogTrigger render={
+                        <div className="flex flex-row gap-2">
+                            <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => setActiveModal("editFacilities")}>
+                                <Plus/>
+                                Add facilities
+                            </Button>    
+                            <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => setActiveModal("addRoom")}>
+                                <Plus/>
+                                Add room
+                            </Button>
+                        </div>
+                    }/>
+                )}
         </div>
 
         {/* Summary cards */}
@@ -425,15 +444,15 @@ export const Rooms = () => {
 
         {/* Add room dialog */}
         <DialogContent className="max-h-[100vh] w-full max-w-2xl flex flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+            {activeModal === "addRoom" &&
+            <>
             <DialogHeader className="border-b px-5 py-5 sm:px-6">
                 <DialogTitle className="text-xl">Add a room</DialogTitle>
                 <DialogDescription>
                 Enter the room details and choose its facilities.
                 </DialogDescription>
-                {/* Shadcn automatically adds a top-right 'X' close button by default, so you don't need to manually build one */}
             </DialogHeader>
 
-            {/* Form Content Area - Added overflow-y-auto so the middle scrolls if the form gets too long */}
             <div className="overflow-y-auto p-5 sm:p-6">
                 <form
                 id="roomAdd-form"
@@ -566,175 +585,250 @@ export const Rooms = () => {
             </div>
 
             <DialogFooter className="justify-end gap-2 border-t px-5 py-4 sm:px-6">
-                <DialogClose render={
+                <DialogClose>
                     <Button
-                        variant="outline"
-                        onClick={() => {
-                        // You only need to reset the form here. 
-                        // DialogClose automatically handles setting isAddOpen to false.
-                        roomAddForm.reset();
-                        }}
-                    >
-                        Cancel
+                            variant="outline"
+                            onClick={() => {
+                            roomAddForm.reset();
+                            }}
+                        >
+                            Cancel
                     </Button>
-                }>
+                    <Button type="submit" className="bg-[#135893] hover:bg-[#174875]" form="roomAdd-form">
+                        Create room
+                    </Button>
                 </DialogClose>
-                <Button type="submit" className="bg-[#135893] hover:bg-[#174875]" form="roomAdd-form">
-                Create room
-                </Button>
             </DialogFooter>
-            </DialogContent>
-        
-
-        {/* Update room dialog */}
-        {isUpdateOpen && (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-            onMouseDown={(e) => {
-            if (e.target === e.currentTarget) {
-                setisUpdateOpen(false);
-                roomUpdateForm.reset();
+            </>
             }
-            }}
-        >
-            <Card className="max-h-[90vh] w-full max-w-2xl gap-0 overflow-hidden py-0 shadow-2xl">
-            <CardHeader className="border-b py-5">
-                <CardTitle className="text-xl">Update room</CardTitle>
-                <CardDescription>
-                Change the room details and facilities.
-                </CardDescription>
-                <CardAction>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                    setisUpdateOpen(false);
-                    roomUpdateForm.reset();
-                    }}
-                    className="flex items-center justify-center"
-                >
-                    X
-                </Button>
-                </CardAction>
-            </CardHeader>
+            {
+                activeModal === "updateRoom" && 
+                <>
+                    <DialogHeader className="border-b px-5 py-5 sm:px-6">
+                        <DialogTitle className="text-xl">Update room</DialogTitle>
+                        <DialogDescription>
+                        Change the room details and facilities.
+                        </DialogDescription>
+                    </DialogHeader>
 
-            <CardContent className="overflow-y-auto p-5 sm:p-6">
-                <form
-                id="roomUpdate-form"
-                className="space-y-6"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    roomUpdateForm.handleSubmit();
-                }}
-                >
-                <Field className="space-y-2">
-                    <FieldLabel htmlFor="update-name">Room name</FieldLabel>
-                    <roomUpdateForm.Field name="name">
-                    {(field) => (
-                        <Input
-                        id="update-name"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        required
-                        />
-                    )}
-                    </roomUpdateForm.Field>
-                </Field>
+                    {/* Form Content Area - Scrolls vertically if the form gets too tall */}
+                    <div className="overflow-y-auto p-5 sm:p-6">
+                        <form
+                        id="roomUpdate-form"
+                        className="space-y-6"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            roomUpdateForm.handleSubmit();
+                        }}
+                        >
+                        <Field className="space-y-2">
+                            <FieldLabel htmlFor="update-name">Room name</FieldLabel>
+                            <roomUpdateForm.Field name="name">
+                            {(field) => (
+                                <Input
+                                id="update-name"
+                                value={field.state.value}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                required
+                                />
+                            )}
+                            </roomUpdateForm.Field>
+                        </Field>
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                    <Field className="space-y-2">
-                    <FieldLabel htmlFor="update-capacity">Capacity</FieldLabel>
-                    <roomUpdateForm.Field name="capacity">
-                        {(field) => (
-                        <Input
-                            id="update-capacity"
-                            type="number"
-                            min={1}
-                            value={field.state.value}
-                            onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                            }
-                            required
-                        />
-                        )}
-                    </roomUpdateForm.Field>
-                    </Field>
-
-                    <Field className="space-y-2">
-                    <FieldLabel htmlFor="update-floor">Floor</FieldLabel>
-                    <roomUpdateForm.Field name="floor">
-                        {(field) => (
-                        <Input
-                            id="update-floor"
-                            type="number"
-                            min={0}
-                            value={field.state.value}
-                            onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                            }
-                            required
-                        />
-                        )}
-                    </roomUpdateForm.Field>
-                    </Field>
-                </div>
-
-                <Field className="space-y-3">
-                    <FieldLabel>Facilities</FieldLabel>
-                    <FieldDescription className="mt-1 text-xs text-muted-foreground">
-                        Update the facilities available in this room.
-                    </FieldDescription>
-
-                    <roomUpdateForm.Field name="facilities">
-                    {(field) => (
-                        <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
-                        {availableFacilities.map((facility, index) => (
-                            <label
-                            key={facility}
-                            className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-muted/50"
-                            >
-                            <Checkbox
-                                id={`update-facility-${index}`}
-                                checked={field.state.value.includes(facility)}
-                                onCheckedChange={(checked) => {
-                                if (checked === true) {
-                                    if (!field.state.value.includes(facility)) {
-                                    field.pushValue(facility);
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <Field className="space-y-2">
+                            <FieldLabel htmlFor="update-capacity">Capacity</FieldLabel>
+                            <roomUpdateForm.Field name="capacity">
+                                {(field) => (
+                                <Input
+                                    id="update-capacity"
+                                    type="number"
+                                    min={1}
+                                    value={field.state.value}
+                                    onChange={(e) =>
+                                    field.handleChange(Number(e.target.value))
                                     }
-                                } else {
-                                    const index =
-                                    field.state.value.indexOf(facility);
-                                    if (index !== -1) field.removeValue(index);
-                                }
-                                }}
-                            />
-                            {facility}
-                            </label>
-                        ))}
-                        </div>
-                    )}
-                    </roomUpdateForm.Field>
-                </Field>
-                </form>
-            </CardContent>
+                                    required
+                                />
+                                )}
+                            </roomUpdateForm.Field>
+                            </Field>
 
-            <CardFooter className="justify-end gap-2 border-t py-4">
-                <Button
-                variant="outline"
-                onClick={() => {
-                    setisUpdateOpen(false);
-                    roomUpdateForm.reset();
-                }}
-                >
-                Cancel
-                </Button>
-                <Button type="submit" form="roomUpdate-form">
-                Save changes
-                </Button>
-            </CardFooter>
-            </Card>
-        </div>
-        )}
+                            <Field className="space-y-2">
+                            <FieldLabel htmlFor="update-floor">Floor</FieldLabel>
+                            <roomUpdateForm.Field name="floor">
+                                {(field) => (
+                                <Input
+                                    id="update-floor"
+                                    type="number"
+                                    min={0}
+                                    value={field.state.value}
+                                    onChange={(e) =>
+                                    field.handleChange(Number(e.target.value))
+                                    }
+                                    required
+                                />
+                                )}
+                            </roomUpdateForm.Field>
+                            </Field>
+                        </div>
+
+                        <Field className="space-y-3">
+                            <FieldLabel>Facilities</FieldLabel>
+                            <FieldDescription className="mt-1 text-xs text-muted-foreground">
+                            Update the facilities available in this room.
+                            </FieldDescription>
+
+                            <roomUpdateForm.Field name="facilities">
+                            {(field) => (
+                                <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
+                                {availableFacilities.map((facility, index) => (
+                                    <label
+                                    key={facility}
+                                    className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-muted/50"
+                                    >
+                                    <Checkbox
+                                        id={`update-facility-${index}`}
+                                        checked={field.state.value.includes(facility)}
+                                        onCheckedChange={(checked) => {
+                                        if (checked === true) {
+                                            if (!field.state.value.includes(facility)) {
+                                            field.pushValue(facility);
+                                            }
+                                        } else {
+                                            const index =
+                                            field.state.value.indexOf(facility);
+                                            if (index !== -1) field.removeValue(index);
+                                        }
+                                        }}
+                                    />
+                                    {facility}
+                                    </label>
+                                ))}
+                                </div>
+                            )}
+                            </roomUpdateForm.Field>
+                        </Field>
+                        </form>
+                    </div>
+
+                    <DialogFooter className="justify-end gap-2 border-t px-5 py-4 sm:px-6">
+                        <DialogClose>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                // DialogClose handles closing the modal automatically.
+                                // You just need to reset the form state here.
+                                roomUpdateForm.reset();
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                            className="bg-[#135893] hover:bg-[#174875] text-white" 
+                            type="submit" 
+                            form="roomUpdate-form"
+                            >
+                            Save changes
+                            </Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </>
+            }
+            {
+                activeModal === "editFacilities" &&
+                <>
+                    <DialogContent className="flex w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
+                        <DialogHeader className="border-b px-5 py-5 sm:px-6 bg-white">
+                            <DialogTitle className="text-xl">Manage Facilities</DialogTitle>
+                            <DialogDescription>
+                            Add a new facility or view currently available ones.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        {/* Two-column layout: Form on left, List on right */}
+                        <div className="grid grid-cols-1 divide-y md:grid-cols-2 md:divide-x md:divide-y-0 border-b">
+                            
+                            {/* Left Side: TanStack Form */}
+                            <div className="bg-slate-50/50 p-5 sm:p-6 flex flex-col">
+                            <form
+                                id="facilityAdd-form"
+                                className="flex-1 space-y-4"
+                                onSubmit={(e) => {
+                                e.preventDefault();
+                                facilityAddForm.handleSubmit();
+                                }}
+                            >
+                                <div className="space-y-2">
+                                <label htmlFor="facility-name" className="text-sm font-medium text-slate-900">
+                                    New Facility Name
+                                </label>
+                                <facilityAddForm.Field name="name">
+                                    {(field) => (
+                                    <Input
+                                        id="facility-name"
+                                        placeholder="e.g. Projector, Video Conferencing"
+                                        value={field.state.value}
+                                        onChange={(e) => field.handleChange(e.target.value)}
+                                        required
+                                    />
+                                    )}
+                                </facilityAddForm.Field>
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    This facility will immediately become available for selection when adding or updating rooms.
+                                </p>
+                                </div>
+                            </form>
+                            </div>
+
+                            {/* Right Side: Scrollable List */}
+                            <div className="flex flex-col p-5 sm:p-6 h-[300px] bg-white">
+                            <h3 className="mb-3 text-sm font-semibold text-slate-900">
+                                Available Facilities ({availableFacilities.length})
+                            </h3>
+                            
+                            <div className="flex-1 overflow-y-auto rounded-md border border-slate-200">
+                                <ul className="divide-y divide-slate-100">
+                                {availableFacilities.map((facility, index) => (
+                                    <li 
+                                    key={index} 
+                                    className="px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                    >
+                                    {facility}
+                                    </li>
+                                ))}
+                                
+                                {availableFacilities.length === 0 && (
+                                    <li className="p-4 text-center text-sm text-muted-foreground">
+                                    No facilities added yet.
+                                    </li>
+                                )}
+                                </ul>
+                            </div>
+                            </div>
+                        </div>
+
+                        <DialogFooter className="justify-end gap-2 bg-slate-50/50 px-5 py-4 sm:px-6">
+                            <DialogClose>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => facilityAddForm.reset()}
+                                >
+                                    Close
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    form="facilityAdd-form"
+                                    className="bg-[#135893] text-white hover:bg-[#174875]"
+                                    >
+                                    Add Facility
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                        </DialogContent>
+                </>
+            }
+        </DialogContent>
     </div>
     </Dialog>
     );
