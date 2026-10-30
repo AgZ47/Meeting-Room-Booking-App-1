@@ -1,18 +1,64 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
-import type { CreateRoomDto } from './dto/create-room.dto.js';
-import { roomsTable, bookingsTable, usersTable } from '../../db/index.js';
-import { eq, sql } from 'drizzle-orm';
+import type { CreateRoomZSchema, CreateRoomDto } from './dto/create-room.dto.js';
+import { roomsTable, bookingsTable, usersTable, facilitiesTable, roomFacilitiesTable } from '../../db/index.js';
+import { eq, sql, inArray } from 'drizzle-orm';
 
 @Injectable()
 export class AdminService {
     constructor(private readonly database: DatabaseService){}
 
-    async addRoom(createRoomDto: CreateRoomDto){
-        const roomData = await this.database.db.insert(roomsTable).values(createRoomDto).returning();
+    
+    async addRoom(createRoomDto: CreateRoomZSchema) {
+        const { facilities, ...roomDetails } = createRoomDto;
 
-        return {roomData: roomData, message: "Room added successfully"};
+        const roomData = await this.database.db.transaction(async (tx) => {
+
+            // Insert room
+            const [newRoom] = await tx
+                .insert(roomsTable)
+                .values(roomDetails)
+                .returning();
+
+            if (facilities.length > 0) {
+
+                // Fetch matching facilities
+                const matchingFacilities = await tx
+                    .select({
+                        id: facilitiesTable.id,
+                        name: facilitiesTable.name,
+                    })
+                    .from(facilitiesTable)
+                    .where(inArray(facilitiesTable.name, facilities));
+
+                // Check whether every requested facility exists
+                if (matchingFacilities.length !== new Set(facilities).size) {
+                    throw new NotFoundException(
+                        'One or more facilities do not exist'
+                    );
+                }
+
+                // Insert room-facility mappings
+                await tx.insert(roomFacilitiesTable).values(
+                    matchingFacilities.map((facility) => ({
+                        room_id: newRoom.id,
+                        facility_id: facility.id,
+                    }))
+                );
+            }
+
+            return {
+                ...newRoom,
+                facilities,
+            };
+        });
+
+        return {
+            roomData,
+            message: 'Room added successfully',
+        };
     }
+
 
     async updateRoom(updateRoomDto: CreateRoomDto){
         const {id, ...updateData} = updateRoomDto;

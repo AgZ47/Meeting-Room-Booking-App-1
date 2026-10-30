@@ -6,14 +6,14 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../common
 import { Button } from "../../common/ui/button";
 import { useAddRoomMutation, useDeactivateRoomMutation, useUpdateRoomMutation } from "../adminBookings/api/adminApiSlice";
 import { useState } from "react";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../common/ui/card";
+import { Card, CardContent,CardFooter} from "../../common/ui/card";
 import { useForm } from "@tanstack/react-form";
 import {z} from "zod"
 import { Input } from "../../common/ui/input";
 import { Checkbox } from "../../common/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../common/ui/radio-group";
 import { Field, FieldDescription, FieldLabel } from "../../common/ui/field";
-import { CircleCheck, Ghost, Plus, ShieldCheck, ShieldX, SquarePen, Trash } from "lucide-react";
+import { CircleCheck, Plus, ShieldCheck, ShieldX, SquarePen, Trash } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../common/ui/dialog";
 

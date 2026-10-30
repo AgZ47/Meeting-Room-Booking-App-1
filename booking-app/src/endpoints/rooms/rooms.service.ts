@@ -1,40 +1,32 @@
-import { Injectable, UnauthorizedException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
-import { JwtService } from '@nestjs/jwt';
-import { roomsTable } from '../../db/index.js';
-import { eq, and } from 'drizzle-orm';
+import { roomsTable, roomFacilitiesTable, facilitiesTable } from '../../db/index.js';
+import { eq } from 'drizzle-orm';
 
 @Injectable()
 export class RoomsService {
-    constructor(private readonly database: DatabaseService, private readonly jwtService: JwtService){}
+    constructor(private readonly database: DatabaseService){}
 
-    async verifyUser(authHeader: string){
-        const [scheme, token] = authHeader?.split(' ') ?? [];
+    async getAllRooms() {
+        // 1. Fetch rooms with their nested facilities using the Relational API
+        const rawRooms = await this.database.db.query.roomsTable.findMany({
+            with: {
+                facilities: true, // This leverages your defineRelations setup
+            },
+        });
 
-        if(!token || scheme !== 'Bearer'){
-            throw new UnauthorizedException("Invalid authorization header");
-        }
+        // 2. Format the response for your frontend
+        // Relational queries return facilities as objects: [{ id: 1, name: "AC" }, ...]
+        // This maps it back to a flat array of strings: ["AC", ...] to match your existing React UI
+        const roomData = rawRooms.map(room => ({
+            ...room,
+            facilities: room.facilities.map(facility => facility.name)
+        }));
 
-        let payload: {id?: number, role? : string};
-        
-        try{
-            payload = await this.jwtService.verifyAsync<{id?: number,role?: string}>(token);
-        }catch(error){
-            throw new UnauthorizedException("Invalid or expired token");
-        }
-
-        if(payload.role === 'admin' || payload.role === 'user'){
-            return payload.id;   
-        }else{
-            throw new ForbiddenException("Unauthorized: Only authorized admin and users can perform this action");
-        }
-    }
-
-    async getAllRooms(){
-
-        const roomData = await this.database.db.select().from(roomsTable);
-
-        return {roomData: roomData, message: "Rooms retrieved successfully"};
+        return { 
+            roomData, 
+            message: "Rooms retrieved successfully"
+        };
     }
 
     async getRoomByFilter(status: string){
