@@ -7,12 +7,13 @@ import { Bookings } from "./features/bookings/bookings";
 import type { RootState } from "./common/store";
 import { useSelector } from "react-redux";
 import { CalendarRange, LogIn, Presentation, ShieldCheck, User, UserPlus } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "./common/ui/hover-card";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-4 rounded-lg p-3 text-sm font-medium transition-colors overflow-hidden ${
+    `flex flex-col items-center gap-1 rounded-lg px-1 py-3 text-sm font-medium transition-colors overflow-hidden w-full ${
       isActive
-        ? "bg-white text-sky-700 font-semibold shadow-sm"
-        : "text-white/80 hover:bg-sky-500 hover:text-white"
+        ? "bg-[#91A5BF] text-white/80 font-semibold shadow-sm"
+        : "text-white/80 hover:bg-[#174875] text-white"
     }`;
 
 function App() {
@@ -22,34 +23,34 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Left Sidebar - Added `group`, width transitions, and whitespace-nowrap */}
-      <aside className="group sticky top-0 flex h-screen flex-col overflow-hidden whitespace-nowrap border-r border-slate-200 px-4 py-6 shadow-sm transition-all duration-300 w-20 hover:w-64 z-50 bg-linear-to-t from-sky-600 from-10% via-sky-700 via-40% to-sky-600 to-90%">
+      <aside className="group sticky top-0 flex items-center h-screen flex-col overflow-hidden whitespace-nowrap border-r border-sky-200 px-1 py-6 shadow-sm transition-all duration-300 w-20 bg-[#135893]">
         
         {/* Brand */}
         <NavLink to="/rooms" className="mb-8 flex items-center gap-4 px-1">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-yellow-500 text-xl font-bold text-white shadow-sm transition-all">
-            M
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl font-bold shadow-sm transition-all">
+            L
           </div>
-          <span className="text-xl font-bold tracking-tight text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+          {/* <span className="text-xl font-bold tracking-tight text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             MeetSpace
-          </span>
+          </span> */}
         </NavLink>
 
         {/* Main navigation */}
-        <nav className="flex flex-1 flex-col gap-3">
+        <nav className="flex flex-1 flex-col gap-2">
           <NavLink to="/rooms" className={navLinkClass}>
             <Presentation className="size-6 shrink-0" />
-            <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Rooms</span>
+            <span>Rooms</span>
           </NavLink>
 
           <NavLink to="/bookings/me" className={navLinkClass}>
             <CalendarRange className="size-6 shrink-0" />
-            <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">My Bookings</span>
+            <span>Bookings</span>
           </NavLink>
           
           {role && role === "admin" && (
             <NavLink to="/admin/bookings" className={navLinkClass}>
               <ShieldCheck className="size-6 shrink-0" />
-              <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Admin</span>
+              <span>Admin</span>
             </NavLink>
           )}
         </nav>
@@ -64,13 +65,13 @@ function App() {
                 className={({ isActive }) =>
                   `flex items-center gap-4 rounded-lg p-3 text-sm font-semibold transition overflow-hidden ${
                     isActive
-                      ? "bg-white text-sky-700 shadow-sm"
-                      : "text-white hover:bg-sky-500"
+                      ? "bg-[#91A5BF] text-sky-700 shadow-sm"
+                      : "text-white hover:bg-[#174875]"
                   }`
                 }
               >
                 <LogIn className="size-6 shrink-0" />
-                <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Log in</span>
+                {/* <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Log in</span> */}
               </NavLink>
               <NavLink
                 to="/register"
@@ -83,21 +84,27 @@ function App() {
                 }
               >
                 <UserPlus className="size-6 shrink-0" />
-                <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Sign up</span>
+                {/* <span className="opacity-0 transition-opacity duration-300 group-hover:opacity-100">Sign up</span> */}
               </NavLink>
             </>
           ) : (
-            <div className="flex items-center gap-4 rounded-xl bg-sky-700/50 px-2 border border-sky-500 overflow-hidden">
-              <User className="size-6 shrink-0 text-white" />
-              <div className="flex flex-col opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <span className="text-sm font-semibold text-white truncate">
-                  {userName}
-                </span>
-                <span className="text-xs font-medium text-sky-200 uppercase tracking-wider">
-                  {role === 'admin' ? 'Admin' : 'User'}
-                </span>
-              </div>
-            </div>
+            <HoverCard>
+              <HoverCardTrigger delay={100} closeDelay={100} render={
+                <div className="flex items-center gap-4 rounded-xl bg-sky-700/50 p-2 border border-sky-500 overflow-hidden">
+                  <User className="size-6 shrink-0 text-white" />
+                </div>
+              }/>
+              <HoverCardContent side="right">
+                <div className="flex flex-col transition-opacity duration-300">
+                  <span className="text-sm font-semibold truncate">
+                    {userName}
+                  </span>
+                  <span className="text-xs font-medium uppercase tracking-wider">
+                    {role === 'admin' ? 'Admin' : 'User'}
+                  </span>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
           )}
         </div>
       </aside>

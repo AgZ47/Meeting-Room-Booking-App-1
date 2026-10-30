@@ -13,7 +13,9 @@ import { Input } from "../../common/ui/input";
 import { Checkbox } from "../../common/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../common/ui/radio-group";
 import { Field, FieldDescription, FieldLabel } from "../../common/ui/field";
-import { Plus, ShieldCheck, ShieldX, SquarePen } from "lucide-react";
+import { CircleCheck, Plus, ShieldCheck, ShieldX, SquarePen } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../common/ui/dialog";
 
 const features = tableFeatures({
     columnVisibilityFeature,
@@ -57,7 +59,6 @@ const updateRoomSchema = z.object({
 })
 
 export const Rooms = () => {
-    const [isAddOpen, setisAddOpen] = useState<boolean>(false)
     const [isUpdateOpen, setisUpdateOpen] = useState<boolean>(false)
     const token = useSelector((state: RootState) => state.auth.usertoken);
     const userRole = useSelector((state: RootState) => state.auth.role);
@@ -80,7 +81,6 @@ export const Rooms = () => {
         onSubmit: async ({value}) => {
             await addRoom(addRoomSchema.parse(value))
             refetch();
-            setisAddOpen(false)
             roomAddForm.reset()
         }
     })
@@ -177,12 +177,13 @@ export const Rooms = () => {
 
         return (
             <span
-            className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs ${
+            className={`inline-flex items-center gap-2 rounded-full p-1 text-xs outline-1 justify-between ${
                 active
-                ? " bg-green-100 text-green-500"
-                : " bg-red-100 text-red-500"
+                ? " bg-green-100 text-green-700 font-bold outline-green-700"
+                : " bg-red-100 text-red-700 font-bold outline-red-700"
             }`}
             >
+            <CircleCheck size="16"/>
             {active ? "Active" : "Deactivated"}
             </span>
         );
@@ -199,31 +200,45 @@ export const Rooms = () => {
 
                 return (
                 <div className="flex flex-wrap items-center gap-2">
-                    <button
-                        title={room.is_active ? "Deactivate Room" : "Activate Room"}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-                        room.is_active 
-                            ? "text-red-500 hover:bg-red-50 hover:text-red-700" 
-                            : "text-green-500 hover:bg-green-50 hover:text-green-700"
-                        }`}
-                        onClick={() => handleDelete(room)}
-                    >
-                        {room.is_active ? <ShieldX className="size-5" /> : <ShieldCheck className="size-5" />}
-                    </button>
-                    <button
-                        title="Edit Room"
-                        className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
-                        onClick={() => {
-                        setisUpdateOpen(true);
-                        roomUpdateForm.setFieldValue("id", room.id);
-                        roomUpdateForm.setFieldValue("name", room.name);
-                        roomUpdateForm.setFieldValue("floor", room.floor);
-                        roomUpdateForm.setFieldValue("capacity", room.capacity);
-                        roomUpdateForm.setFieldValue("facilities", room.facilities);
-                        }}
-                    >
-                        <SquarePen className="size-5" />
-                    </button>
+                    <HoverCard>
+                        <HoverCardTrigger delay={100} closeDelay={100} render={
+                            <button
+                                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                                room.is_active 
+                                    ? "text-red-500 hover:bg-red-50 hover:text-red-700" 
+                                    : "text-green-500 hover:bg-green-50 hover:text-green-700"
+                                }`}
+                                onClick={() => handleDelete(room)}
+                            >
+                                {room.is_active ? <ShieldX className="size-5" /> : <ShieldCheck className="size-5" />}
+                            </button>
+                        }/>
+                        <HoverCardContent side="top" className="mid-w-xs">
+                            {room.is_active ? <div>Deactivate room</div> : <div>Activate room</div>}
+                        </HoverCardContent>
+                    </HoverCard>
+                    <HoverCard>
+                        <HoverCardTrigger delay={100} closeDelay={100} render={
+                            <button
+                                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
+                                onClick={() => {
+                                setisUpdateOpen(true);
+                                roomUpdateForm.setFieldValue("id", room.id);
+                                roomUpdateForm.setFieldValue("name", room.name);
+                                roomUpdateForm.setFieldValue("floor", room.floor);
+                                roomUpdateForm.setFieldValue("capacity", room.capacity);
+                                roomUpdateForm.setFieldValue("facilities", room.facilities);
+                                }}
+                            >
+                                <SquarePen className="size-5" />
+                            </button>
+                        }/>
+                        <HoverCardContent side="top">
+                            <div>
+                                Edit details
+                            </div>
+                        </HoverCardContent>
+                    </HoverCard>
                 </div>
                 );
             },
@@ -281,6 +296,7 @@ export const Rooms = () => {
     }
 
     return (
+    <Dialog>
     <div className="mx-auto w-full space-y-6 p-4 sm:p-6">
         {/* Page heading */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -294,13 +310,12 @@ export const Rooms = () => {
         </div>
 
         {userRole === "admin" && (
-            <Button
-            className="w-full sm:w-auto bg-sky-600 text-white"
-            onClick={() => setisAddOpen(true)}
-            >
-                <Plus/>
-                Add room
-            </Button>
+            <DialogTrigger render={
+                <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" >
+                    <Plus/>
+                    Add room
+                </Button>
+            }/>
         )}
         </div>
 
@@ -349,7 +364,7 @@ export const Rooms = () => {
                         {headerGroup.headers.map((header) => (
                         <TableCell
                             key={header.id}
-                            className="h-11 whitespace-nowrap text-xs font-semibold uppercase tracking-wide bg-sky-600 text-white px-3 border-r border-sky-100 last:border-r-0"
+                            className="h-11 whitespace-nowrap text-xs font-semibold uppercase tracking-wide bg-[#135893] text-white px-3 border-r border-sky-700 last:border-r-0"
                         >
                             {header.isPlaceholder
                             ? null
@@ -395,48 +410,31 @@ export const Rooms = () => {
                 Rooms will appear here once they have been added to your workspace.
             </p>
             {userRole === "admin" && (
-                <Button
-                variant="outline"
-                className="mt-5"
-                onClick={() => setisAddOpen(true)}
-                >
-                Add your first room
-                </Button>
+                <DialogTrigger render={
+                    <Button
+                    variant="outline"
+                    className="mt-5"
+                    >
+                        Add your first room
+                    </Button>
+                }/>
             )}
             </CardContent>
         )}
         </Card>
 
         {/* Add room dialog */}
-        {isAddOpen && (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-            onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setisAddOpen(false);
-            }}
-        >
-            <Card className="max-h-[90vh] w-full max-w-2xl gap-0 overflow-hidden py-0 shadow-2xl">
-            <CardHeader className="border-b py-5">
-                <CardTitle className="text-xl">Add a room</CardTitle>
-                <CardDescription>
+        <DialogContent className="max-h-[100vh] w-full max-w-2xl flex flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+            <DialogHeader className="border-b px-5 py-5 sm:px-6">
+                <DialogTitle className="text-xl">Add a room</DialogTitle>
+                <DialogDescription>
                 Enter the room details and choose its facilities.
-                </CardDescription>
-                <CardAction>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                    setisAddOpen(false);
-                    roomUpdateForm.reset();
-                    }}
-                    className="flex items-center justify-center"
-                >
-                    X
-                </Button>
-                </CardAction>
-            </CardHeader>
+                </DialogDescription>
+                {/* Shadcn automatically adds a top-right 'X' close button by default, so you don't need to manually build one */}
+            </DialogHeader>
 
-            <CardContent className="overflow-y-auto p-5 sm:p-6">
+            {/* Form Content Area - Added overflow-y-auto so the middle scrolls if the form gets too long */}
+            <div className="overflow-y-auto p-5 sm:p-6">
                 <form
                 id="roomAdd-form"
                 className="space-y-6"
@@ -501,7 +499,7 @@ export const Rooms = () => {
                 <Field className="space-y-3">
                     <FieldLabel>Facilities</FieldLabel>
                     <FieldDescription className="mt-1 text-xs text-muted-foreground">
-                        Select all facilities available in this room.
+                    Select all facilities available in this room.
                     </FieldDescription>
 
                     <roomAddForm.Field name="facilities">
@@ -565,25 +563,28 @@ export const Rooms = () => {
                     </roomAddForm.Field>
                 </Field>
                 </form>
-            </CardContent>
+            </div>
 
-            <CardFooter className="justify-end gap-2 border-t py-4">
-                <Button
-                variant="outline"
-                onClick={() => {
-                    setisAddOpen(false);
-                    roomAddForm.reset();
-                }}
-                >
-                Cancel
-                </Button>
-                <Button type="submit" form="roomAdd-form">
+            <DialogFooter className="justify-end gap-2 border-t px-5 py-4 sm:px-6">
+                <DialogClose render={
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                        // You only need to reset the form here. 
+                        // DialogClose automatically handles setting isAddOpen to false.
+                        roomAddForm.reset();
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                }>
+                </DialogClose>
+                <Button type="submit" className="bg-[#135893] hover:bg-[#174875]" form="roomAdd-form">
                 Create room
                 </Button>
-            </CardFooter>
-            </Card>
-        </div>
-        )}
+            </DialogFooter>
+            </DialogContent>
+        
 
         {/* Update room dialog */}
         {isUpdateOpen && (
@@ -735,5 +736,6 @@ export const Rooms = () => {
         </div>
         )}
     </div>
+    </Dialog>
     );
 }

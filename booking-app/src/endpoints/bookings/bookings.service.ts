@@ -28,9 +28,6 @@ export class BookingsService {
     }
 
     async getAllUserBookings(userId: number){
-
-        console.log(userId)
-
         if(!userId){
             throw new UnauthorizedException("Invalid token");
         }

@@ -7,7 +7,7 @@ import type {bookingsResponse} from "./api/adminApiSlice"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
 import { Card, CardFooter} from "../../common/ui/card";
-import { RotateCcw, SquareX, Trash } from "lucide-react";
+import { CircleAlert, CircleCheck, CircleX, RotateCcw, SquareX, Trash } from "lucide-react";
 import { useMemo } from "react";
 
 export const features = tableFeatures({
@@ -63,20 +63,38 @@ export const column: ColumnDef<typeof features, bookingsResponse>[] = [
     header: 'Status',
     cell: (info) => {
       if(info.getValue() === 'confirmed'){
-        return (<div className="bg-green-100 text-green-500 rounded-xl text-center p-1">{info.getValue<string>()}</div>)
+        return (
+          <span
+            className="inline-flex items-center gap-2 rounded-full p-1 text-xs outline-1 justify-between bg-green-100 text-green-700 font-bold outline-green-700">
+            <CircleCheck size="16"/>
+            confirmed
+          </span>
+        )
       }
       if(info.getValue() === 'cancelled'){
-        return(<div className="bg-red-100 text-red-500 rounded-xl text-center p-1">{info.getValue<string>()}</div>)
+        return(
+          <span
+            className="inline-flex items-center gap-2 rounded-full p-1 text-xs outline-1 justify-between bg-red-100 text-red-700 font-bold outline-red-700">
+            <CircleX size="16"/>
+            cancelled
+          </span>
+        )
       }
       if(info.getValue() === 'completed'){
-        return(<div className="bg-blue-100 text-blue-500 rounded-xl text-center p-1">{info.getValue<string>()}</div>)
+        return(
+          <span
+            className="inline-flex items-center gap-2 rounded-full p-1 text-xs outline-1 justify-between bg-blue-100 text-blue-700 font-bold outline-blue-700">
+            <CircleAlert size={16}/>
+            completed
+          </span>
+        )
       }
     },
   },
   {
-    accessorKey: 'created_at',
-    id: 'created_at',
-    header: 'Created At',
+    accessorKey: 'bookingDate',
+    id: 'bookingDate',
+    header: 'Booking date',
     cell: (info) => {
       const value = info.getValue<string>();
       return new Date(value).toLocaleString();
@@ -192,7 +210,7 @@ export const AdminBookings = () => {
             All Bookings
           </h1>
         </div>
-        <Button className="bg-sky-600" onClick={() => refetch()}>
+        <Button className="bg-[#135893]" onClick={() => refetch()}>
           Refresh
           <RotateCcw/>
         </Button>
@@ -213,7 +231,7 @@ export const AdminBookings = () => {
         <Card className="p-6 transition-shadow hover:shadow-sm">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Confirmed</p>
-            <p className="text-3xl font-bold tabular-nums text-emerald-600">
+            <p className="text-3xl font-bold tabular-nums">
               {sortedBookings.filter((booking) => booking.status === "confirmed").length}
             </p>
           </div>
@@ -222,7 +240,7 @@ export const AdminBookings = () => {
         <Card className="p-6 transition-shadow hover:shadow-sm">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Cancelled</p>
-            <p className="text-3xl font-bold tabular-nums text-red-600">
+            <p className="text-3xl font-bold tabular-nums">
               {sortedBookings.filter((booking) => booking.status === "cancelled").length}
             </p>
           </div>
@@ -231,7 +249,7 @@ export const AdminBookings = () => {
         <Card className="p-6 transition-shadow hover:shadow-sm">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Completed</p>
-            <p className="text-3xl font-bold tabular-nums text-blue-600">
+            <p className="text-3xl font-bold tabular-nums">
               {sortedBookings.filter((booking) => booking.status === "completed").length}
             </p>
           </div>
@@ -248,7 +266,7 @@ export const AdminBookings = () => {
                   {headerGroup.headers.map((header) => (
                     <TableHead 
                       key={header.id}
-                      className="h-11 bg-sky-600 px-4 text-xs font-semibold uppercase tracking-wider text-white whitespace-nowrap border-r border-sky-500 last:border-r-0"
+                      className="h-11 bg-[#135893] px-4 text-xs font-semibold uppercase tracking-wider text-white whitespace-nowrap border-r border-sky-700 last:border-r-0"
                     >
                       {header.isPlaceholder ? null : (
                         <table.FlexRender header={header} />
@@ -268,7 +286,7 @@ export const AdminBookings = () => {
                   {row.getVisibleCells().map((cell) => (
                     <TableCell 
                       key={cell.id}
-                      className="px-4 py-3 align-middle border-r border-slate-100 last:border-r-0 whitespace-nowrap"
+                      className="px-3 py-4 align-middle border-r border-slate-100 last:border-r-0 whitespace-nowrap"
                     >
                       <table.FlexRender cell={cell} />
                     </TableCell>
