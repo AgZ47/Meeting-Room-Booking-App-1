@@ -13,7 +13,7 @@ import { Input } from "../../common/ui/input";
 import { Checkbox } from "../../common/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../common/ui/radio-group";
 import { Field, FieldDescription, FieldLabel } from "../../common/ui/field";
-import { CircleCheck, Plus, ShieldCheck, ShieldX, SquarePen } from "lucide-react";
+import { CircleCheck, Ghost, Plus, ShieldCheck, ShieldX, SquarePen, Trash } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../common/ui/dialog";
 
@@ -231,20 +231,16 @@ export const Rooms = () => {
                     </HoverCard>
                     <HoverCard>
                         <HoverCardTrigger delay={100} closeDelay={100} render={
-                            <DialogTrigger>
-                                <button
-                                    className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
-                                    onClick={() => {
-                                    setActiveModal("updateRoom")
-                                    roomUpdateForm.setFieldValue("id", room.id);
-                                    roomUpdateForm.setFieldValue("name", room.name);
-                                    roomUpdateForm.setFieldValue("floor", room.floor);
-                                    roomUpdateForm.setFieldValue("capacity", room.capacity);
-                                    roomUpdateForm.setFieldValue("facilities", room.facilities);
-                                    }}
-                                >
-                                    <SquarePen className="size-5" />
-                                </button>
+                            <DialogTrigger className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
+                            onClick={() => {
+                                setActiveModal("updateRoom")
+                                roomUpdateForm.setFieldValue("id", room.id);
+                                roomUpdateForm.setFieldValue("name", room.name);
+                                roomUpdateForm.setFieldValue("floor", room.floor);
+                                roomUpdateForm.setFieldValue("capacity", room.capacity);
+                                roomUpdateForm.setFieldValue("facilities", room.facilities);
+                            }}>
+                                <SquarePen className="size-5" />
                             </DialogTrigger>
                         }/>
                         <HoverCardContent side="top">
@@ -323,18 +319,20 @@ export const Rooms = () => {
                 </h1>
             </div>
                 {userRole === "admin" && (
-                    <DialogTrigger render={
-                        <div className="flex flex-row gap-2">
+                    <div className="flex flex-row gap-2">
+                        <DialogTrigger render={
                             <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => setActiveModal("editFacilities")}>
                                 <Plus/>
                                 Add facilities
-                            </Button>    
+                            </Button>
+                        }/>
+                        <DialogTrigger render={
                             <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => setActiveModal("addRoom")}>
                                 <Plus/>
                                 Add room
                             </Button>
-                        </div>
-                    }/>
+                        }/>
+                    </div>
                 )}
         </div>
 
@@ -790,12 +788,17 @@ export const Rooms = () => {
                             <div className="flex-1 overflow-y-auto rounded-md border border-slate-200">
                                 <ul className="divide-y divide-slate-100">
                                 {availableFacilities.map((facility, index) => (
-                                    <li 
-                                    key={index} 
-                                    className="px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                                    >
-                                    {facility}
-                                    </li>
+                                    <div className="flex flex-row justify-between px-2">
+                                        <li 
+                                            key={index} 
+                                            className="px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                            >
+                                            {facility}
+                                        </li>
+                                        <Button variant="ghost">
+                                            <Trash color="red"/>
+                                        </Button>
+                                    </div>
                                 ))}
                                 
                                 {availableFacilities.length === 0 && (
