@@ -199,7 +199,7 @@ export const AdminBookings = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 p-8">
       {/* Page Header */}
       <div className="flex flex-row justify-between">
         <div className="space-y-1">

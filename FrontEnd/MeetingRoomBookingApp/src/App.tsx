@@ -106,7 +106,7 @@ function App() {
 
       {/* Page content */}
       <main className="flex-1 h-screen overflow-y-auto">
-        <div className="w-full px-8 py-8">
+        <div className="w-full">
           <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
