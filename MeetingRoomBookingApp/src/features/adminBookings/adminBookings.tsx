@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
-import { useCancelBookingMutation, useDeleteBookingMutation, useGetBookingsQuery } from "./api/adminApiSlice";
+import { useCancelBookingMutation, useDeleteBookingMutation, useGetBookingsQuery } from "./api/adminApiService";
 import type { RootState } from "../../common/store";
 import { useTable, tableFeatures, columnVisibilityFeature } from "@tanstack/react-table"
 import type { ColumnDef } from "@tanstack/react-table";
-import type {bookingsResponse} from "./api/adminApiSlice"
+import type {bookingsResponse} from "./api/adminApiService"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
 import { Card, CardFooter} from "../../common/ui/card";

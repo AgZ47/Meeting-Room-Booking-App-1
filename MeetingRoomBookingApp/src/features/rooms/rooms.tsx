@@ -1,10 +1,10 @@
 import { useSelector } from "react-redux";
-import { useGetAllRoomsQuery } from "./api/roomsApiSlice"
+import { useGetAllRoomsQuery } from "./api/roomsApiService"
 import type { RootState } from "../../common/store";
 import { tableFeatures, useTable, type CellContext, type ColumnDef, columnVisibilityFeature } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
-import { useAddRoomMutation, useDeactivateRoomMutation, useGetAllFacilitiesQuery, useUpdateRoomMutation, useAddFacilityMutation, useDeleteFacilityMutation } from "../adminBookings/api/adminApiSlice";
+import { useAddRoomMutation, useDeactivateRoomMutation, useGetAllFacilitiesQuery, useUpdateRoomMutation, useAddFacilityMutation, useDeleteFacilityMutation } from "../adminBookings/api/adminApiService";
 import { useState } from "react";
 import { Card, CardContent,CardFooter} from "../../common/ui/card";
 import { useForm } from "@tanstack/react-form";

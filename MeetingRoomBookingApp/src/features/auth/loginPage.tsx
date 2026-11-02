@@ -3,7 +3,7 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { Input } from '../../common/ui/input'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
-import { useLoginUserMutation } from '../auth/api/authApiSlice'
+import { useLoginUserMutation } from './api/authApiService'
 import { useDispatch } from 'react-redux'
 import { setCredentials } from '../auth/api/authSlice'
 import { useNavigate } from 'react-router-dom'

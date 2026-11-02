@@ -4,7 +4,7 @@ import { Input } from "../../common/ui/input"
 import { useNavigate } from "react-router-dom"
 import { useForm } from "@tanstack/react-form"
 import { z } from 'zod'
-import { useRegisterUserMutation } from "./api/authApiSlice"
+import { useRegisterUserMutation } from "./api/authApiService"
 import { useDispatch } from "react-redux"
 import { setCredentials } from "./api/authSlice"
 import { Label } from "../../common/ui/label"

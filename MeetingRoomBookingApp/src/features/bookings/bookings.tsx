@@ -11,15 +11,15 @@ import {
 } from "date-fns";
 
 import type { RootState } from "../../common/store";
-import type { bookingsResponse } from "../adminBookings/api/adminApiSlice";
+import type { bookingsResponse } from "../adminBookings/api/adminApiService";
 
 import {
   useCancelUserBookingMutation,
   useGetAllUserBookingsQuery,
   usePostUserBookingMutation,
-} from "./api/bookingsApiSlice";
+} from "./api/bookingsApiService";
 
-import { useGetAllRoomsQuery } from "../rooms/api/roomsApiSlice";
+import { useGetAllRoomsQuery } from "../rooms/api/roomsApiService";
 
 import { Button } from "../../common/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card"
