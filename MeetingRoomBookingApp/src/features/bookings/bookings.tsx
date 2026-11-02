@@ -11,15 +11,15 @@ import {
 } from "date-fns";
 
 import type { RootState } from "../../common/store";
-import type { bookingsResponse } from "../adminBookings/api/adminApiService";
 
 import {
   useCancelUserBookingMutation,
   useGetAllUserBookingsQuery,
   usePostUserBookingMutation,
+  type bookingsFetchType,
 } from "./api/bookingsApiService";
 
-import { useGetAllRoomsQuery } from "../rooms/api/roomsApiService";
+import { useGetAllRoomsQuery } from "../rooms/api/roomsApiSlice";
 
 import { Button } from "../../common/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card"
@@ -103,13 +103,13 @@ const getBookingPosition = (
 // --------------------------------------------------
 
 type PositionedBooking = {
-  booking: bookingsResponse;
+  booking: bookingsFetchType;
   lane: number;
   laneCount: number;
 };
 
 const getDayBookingsLayout = (
-  bookings: bookingsResponse[]
+  bookings: bookingsFetchType[]
 ): PositionedBooking[] => {
   const validBookings = bookings
     .filter((booking) => {
@@ -126,7 +126,7 @@ const getDayBookingsLayout = (
     );
 
   const assigned: {
-    booking: bookingsResponse;
+    booking: bookingsFetchType;
     lane: number;
   }[] = [];
 
@@ -210,7 +210,7 @@ export const Bookings = () => {
   const [cancelData] = useCancelUserBookingMutation();
 
   const rooms = roomsData?.roomData ?? [];
-  const bookings: bookingsResponse[] = data?.data ?? [];
+  const bookings: bookingsFetchType[] = data?.data ?? [];
 
   const sortedBookings = [...bookings].sort(
     (a, b) => a.bookingId - b.bookingId

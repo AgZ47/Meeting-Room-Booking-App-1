@@ -44,7 +44,7 @@ export const bookingsApiSlice = createApi({
         }
     }),
     endpoints: (builder) => ({
-        getAllUserBookings: builder.query<{data: bookingsResponse[], message: string},void>({
+        getAllUserBookings: builder.query<{data: bookingsFetchType[], message: string},void>({
             query: () => '/bookings/me',
         }),
         postUserBooking: builder.mutation<{data: bookingsReturnType, message: string}, bookingsPostType>({

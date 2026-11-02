@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { useGetAllRoomsQuery } from "./api/roomsApiService"
+import { useGetAllRoomsQuery } from "./api/roomsApiSlice"
 import type { RootState } from "../../common/store";
 import { tableFeatures, useTable, type CellContext, type ColumnDef, columnVisibilityFeature } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../common/ui/table";

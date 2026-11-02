@@ -1,5 +1,5 @@
 import { LoginPage } from "./features/auth/loginPage";
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink, useLocation } from "react-router-dom";
 import { RegisterPage } from "./features/auth/registerPage";
 import { AdminBookings } from "./features/adminBookings/adminBookings";
 import { Rooms } from "./features/rooms/rooms";
@@ -8,6 +8,7 @@ import type { RootState } from "./common/store";
 import { useSelector } from "react-redux";
 import { CalendarRange, LogIn, Presentation, ShieldCheck, User, UserPlus } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./common/ui/hover-card";
+import { Button } from "./common/ui/button";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex flex-col items-center gap-1 rounded-lg px-1 py-3 text-sm font-medium transition-colors overflow-hidden w-full ${
@@ -19,10 +20,12 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 function App() {
   const role = useSelector((state: RootState) => state.auth.role)
   const userName = useSelector((state: RootState) => state.auth.name)
+  const location = useLocation();
+  const isAuthPage = location.pathname === "/" || location.pathname === "/register";
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <aside className="group sticky top-0 flex items-center h-screen flex-col overflow-hidden whitespace-nowrap border-r border-sky-200 px-1 py-6 shadow-sm transition-all duration-300 w-20 bg-[#135893]">
+      { !isAuthPage && <aside className="group sticky top-0 flex items-center h-screen flex-col overflow-hidden whitespace-nowrap border-r border-sky-200 px-1 py-6 shadow-sm transition-all duration-300 w-20 bg-[#135893]">
         
         <NavLink to="/rooms" className="mb-8 flex items-center gap-4 px-1">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-l font-bold shadow-sm transition-all outline-3 outline-black hover:outline-gray-500">
@@ -51,7 +54,7 @@ function App() {
         </nav>
 
         {/* Authentication / User Profile */}
-        <div className="mt-auto flex flex-col gap-2 border-t border-sky-400 pt-4">
+        <div className="mt-auto flex flex-col gap-2 border-t border-[#bac6d1] pt-4">
           {!role ? (
             <>
               <NavLink
@@ -97,12 +100,13 @@ function App() {
                   <span className="text-xs font-medium uppercase tracking-wider">
                     {role === 'admin' ? 'Admin' : 'User'}
                   </span>
+                  <Button onClick={() => {window.location.reload(); navigation.navigate('/');}}>Logout</Button>
                 </div>
               </HoverCardContent>
             </HoverCard>
           )}
         </div>
-      </aside>
+      </aside>}
 
       {/* Page content */}
       <main className="flex-1 h-screen overflow-y-auto">
