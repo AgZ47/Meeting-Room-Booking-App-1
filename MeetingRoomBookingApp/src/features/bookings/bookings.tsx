@@ -41,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../common/ui/select";
+import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
 
 // --------------------------------------------------
 // Calendar configuration
@@ -321,6 +322,7 @@ export const Bookings = () => {
                 setCurrentWeek(addWeeks(currentWeek, -1))
               }
             >
+            <ArrowBigLeft/>
               Previous
             </Button>
 
@@ -344,6 +346,7 @@ export const Bookings = () => {
               }
             >
               Next
+              <ArrowBigRight/>
             </Button>
 
             <Button
@@ -399,7 +402,7 @@ export const Bookings = () => {
                       <div
                         className={`mx-auto mt-1 flex size-8 items-center justify-center rounded-full text-sm font-semibold ${
                           isToday
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-[#135893] text-primary-foreground"
                             : ""
                         }`}
                       >
@@ -503,7 +506,7 @@ export const Bookings = () => {
                                             ? "border-muted-foreground/20 bg-muted text-muted-foreground"
                                             : isCompleted
                                             ? "border-green-300 bg-green-100 text-green-950 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
-                                            : "border-blue-300 bg-blue-100 text-blue-950 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
+                                            : "border-[#135893] bg-blue-300 text-blue-950 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
                                         }`}
                                         style={{
                                             top: position.top,

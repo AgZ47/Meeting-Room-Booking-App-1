@@ -25,8 +25,8 @@ function App() {
       <aside className="group sticky top-0 flex items-center h-screen flex-col overflow-hidden whitespace-nowrap border-r border-sky-200 px-1 py-6 shadow-sm transition-all duration-300 w-20 bg-[#135893]">
         
         <NavLink to="/rooms" className="mb-8 flex items-center gap-4 px-1">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl font-bold shadow-sm transition-all outline-3 outline-black hover:outline-gray-500">
-            L
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-l font-bold shadow-sm transition-all outline-3 outline-black hover:outline-gray-500">
+            LTS
           </div>
         </NavLink>
 
