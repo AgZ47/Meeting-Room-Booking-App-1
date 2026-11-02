@@ -311,7 +311,7 @@ export const Rooms = () => {
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 Workspace / Resources
                 </p>
-                <h1 className="text-3xl font-semibold tracking-tight">
+                <h1 className="text-3xl font-semibold tracking-tight text-[#135893]">
                 Meeting rooms
                 </h1>
             </div>
@@ -336,7 +336,7 @@ export const Rooms = () => {
         <Card className="gap-2 py-5">
             <CardContent className="space-y-1">
             <p className="text-sm text-muted-foreground">Total rooms</p>
-            <p className="text-3xl font-semibold tabular-nums">
+            <p className="text-3xl font-semibold tabular-nums text-[#135893]">
                 {rooms.length}
             </p>
             </CardContent>
@@ -345,7 +345,7 @@ export const Rooms = () => {
         <Card className="gap-2 py-5">
             <CardContent className="space-y-1">
             <p className="text-sm text-muted-foreground">Active rooms</p>
-            <p className="text-3xl font-semibold tabular-nums">
+            <p className="text-3xl font-semibold tabular-nums text-[#135893]">
                 {rooms.filter((room) => room.is_active).length}
             </p>
             </CardContent>
@@ -354,7 +354,7 @@ export const Rooms = () => {
         <Card className="gap-2 py-5">
             <CardContent className="space-y-1">
             <p className="text-sm text-muted-foreground">Deactivated rooms</p>
-            <p className="text-3xl font-semibold tabular-nums">
+            <p className="text-3xl font-semibold tabular-nums text-[#135893]">
                 {rooms.filter((room) => !room.is_active).length}
             </p>
             </CardContent>

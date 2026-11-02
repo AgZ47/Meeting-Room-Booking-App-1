@@ -206,7 +206,7 @@ export const AdminBookings = () => {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Workspace / Resources
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#135893]">
             All Bookings
           </h1>
         </div>
@@ -222,7 +222,7 @@ export const AdminBookings = () => {
         <Card className="p-6 transition-shadow hover:shadow-sm">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Total Bookings</p>
-            <p className="text-3xl font-bold tabular-nums text-slate-900">
+            <p className="text-3xl font-bold tabular-nums text-[#135893]">
               {sortedBookings.length}
             </p>
           </div>
@@ -231,7 +231,7 @@ export const AdminBookings = () => {
         <Card className="p-6 transition-shadow hover:shadow-sm">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Confirmed</p>
-            <p className="text-3xl font-bold tabular-nums">
+            <p className="text-3xl font-bold tabular-nums text-[#135893]">
               {sortedBookings.filter((booking) => booking.status === "confirmed").length}
             </p>
           </div>
@@ -240,7 +240,7 @@ export const AdminBookings = () => {
         <Card className="p-6 transition-shadow hover:shadow-sm">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Cancelled</p>
-            <p className="text-3xl font-bold tabular-nums">
+            <p className="text-3xl font-bold tabular-nums text-[#135893]">
               {sortedBookings.filter((booking) => booking.status === "cancelled").length}
             </p>
           </div>
@@ -249,7 +249,7 @@ export const AdminBookings = () => {
         <Card className="p-6 transition-shadow hover:shadow-sm">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground">Completed</p>
-            <p className="text-3xl font-bold tabular-nums">
+            <p className="text-3xl font-bold tabular-nums text-[#135893]">
               {sortedBookings.filter((booking) => booking.status === "completed").length}
             </p>
           </div>

@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "../../common/ui/select";
 import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
+import { ButtonGroup } from "../../common/ui/button-group";
 
 // --------------------------------------------------
 // Calendar configuration
@@ -300,15 +301,20 @@ export const Bookings = () => {
   // --------------------------------------------------
 
   return (
-    <div className="flex min-h-screen flex-col gap-4 p-4">
+    <div className="flex min-h-screen flex-col gap-4 p-8">
 
       {/* Calendar toolbar */}
-      <Card>
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">
-              Meeting Calendar
-            </h1>
+            <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Workspace / Resources
+                </p>
+                <h1 className="text-3xl font-semibold tracking-tight text-[#135893]">
+                  Bookings 
+                </h1>
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {format(currentWeek, "MMMM d")} –{" "}
               {format(addDays(currentWeek, 6), "MMMM d, yyyy")}
@@ -316,39 +322,40 @@ export const Bookings = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCurrentWeek(addWeeks(currentWeek, -1))
-              }
-            >
-            <ArrowBigLeft/>
-              Previous
-            </Button>
+              <ButtonGroup>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setCurrentWeek(addWeeks(currentWeek, -1))
+                  }
+                >
+                <ArrowBigLeft/>
+                  Previous
+                </Button>
 
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCurrentWeek(
-                  startOfWeek(new Date(), {
-                    weekStartsOn: 1,
-                  })
-                )
-              }
-            >
-              Today
-            </Button>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setCurrentWeek(
+                      startOfWeek(new Date(), {
+                        weekStartsOn: 1,
+                      })
+                    )
+                  }
+                >
+                  Today
+                </Button>
 
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCurrentWeek(addWeeks(currentWeek, 1))
-              }
-            >
-              Next
-              <ArrowBigRight/>
-            </Button>
-
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setCurrentWeek(addWeeks(currentWeek, 1))
+                  }
+                >
+                  Next
+                  <ArrowBigRight/>
+                </Button>
+            </ButtonGroup>
             <Button
               onClick={() => {
                 refetchRooms();
@@ -358,13 +365,13 @@ export const Bookings = () => {
               + Book a room
             </Button>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent>
+        <div>
           {/* Calendar legend */}
           <div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="size-3 rounded-sm border border-blue-300 bg-blue-100 dark:border-blue-800 dark:bg-blue-950" />
+              <span className="size-3 rounded-sm border border-blue-300 bg-blue-300 dark:border-blue-800 dark:bg-blue-950" />
               Confirmed booking
             </div>
 
@@ -380,7 +387,7 @@ export const Bookings = () => {
 
               {/* Day headers */}
               <div className="sticky top-0 z-30 grid grid-cols-[76px_repeat(7,minmax(0,1fr))] border-b bg-background">
-                <div className="border-r p-3 text-center text-xs text-muted-foreground">
+                <div className="border-r border-sky-700 p-3 text-center text-xs text-white bg-[#135893] flex flex-col justify-center">
                   GMT+5:30
                 </div>
 
@@ -393,17 +400,17 @@ export const Bookings = () => {
                   return (
                     <div
                       key={day.toISOString()}
-                      className="border-r px-2 py-3 text-center"
+                      className="border-r border-sky-700 px-2 py-3 text-center bg-[#135893]"
                     >
-                      <p className="text-xs font-medium text-muted-foreground">
+                      <p className="text-xs font-medium text-white">
                         {format(day, "EEE")}
                       </p>
 
                       <div
                         className={`mx-auto mt-1 flex size-8 items-center justify-center rounded-full text-sm font-semibold ${
                           isToday
-                            ? "bg-[#135893] text-primary-foreground"
-                            : ""
+                            ? "bg-blue-500 text-primary-foreground"
+                            : "text-white"
                         }`}
                       >
                         {format(day, "d")}
@@ -421,7 +428,7 @@ export const Bookings = () => {
                   {timeSlots.map((hour) => (
                     <div
                       key={hour}
-                      className="relative border-b pr-2 text-right text-xs text-muted-foreground"
+                      className="relative border-b pr-2 text-center text-xs"
                       style={{ height: HOUR_HEIGHT }}
                     >
                       <span className="relative -top-2">
@@ -581,9 +588,9 @@ export const Bookings = () => {
               </div>
             </div>
           </div>
-        </CardContent>
+        </div>
 
-        <CardFooter className="justify-between border-t py-3 text-xs text-muted-foreground">
+        <div className="justify-between border-t py-3 text-xs text-muted-foreground">
           <span>
             Showing {sortedBookings.length} bookings
           </span>
@@ -591,8 +598,8 @@ export const Bookings = () => {
             {format(currentWeek, "MMM d")} –{" "}
             {format(addDays(currentWeek, 6), "MMM d")}
           </span>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
 
       {/* Add booking dialog */}
       {isAddBookingOpen && (
