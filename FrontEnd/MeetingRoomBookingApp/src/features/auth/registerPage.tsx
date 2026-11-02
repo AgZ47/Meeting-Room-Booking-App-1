@@ -74,7 +74,7 @@ export const RegisterPage = () => {
                 <CardTitle>Sign Up</CardTitle>
                 <CardDescription>Enter your credentials to create your account</CardDescription>
                 <CardAction>
-                <Button className="bg-sky-600" onClick={() => navigate('/')}>Login</Button>
+                <Button onClick={() => navigate('/')}>Login</Button>
                 </CardAction>
             </CardHeader>
             <CardContent>
@@ -128,7 +128,7 @@ export const RegisterPage = () => {
                 </form>
             </CardContent>
             <CardFooter>
-                <Button className="bg-sky-600" type='submit' form="login-form">Sign Up</Button>
+                <Button type='submit' form="login-form">Sign Up</Button>
             </CardFooter>
             </Card>
         </div>

@@ -6,7 +6,7 @@ export type roomsType = {
     name: string,
     capacity: number,
     floor: number,
-    facilities: string[], 
+    facilities: {id: number, name:string}[], 
     is_active: boolean,
 }
 

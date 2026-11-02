@@ -27,17 +27,32 @@ export class AdminController {
     }
 
     @Put('rooms')
-    updateRoom(@Body(new ZodValidationPipe(updateRoomSchema)) updateRoomDto: CreateRoomDto){
+    updateRoom(@Body() updateRoomDto: {id: number,name: string, capacity: number, floor: number, is_active: boolean, facilities: number[]}){
         return this.adminService.updateRoom(updateRoomDto);
     }
 
     @Post('rooms')
-    addRoom(@Body(new ZodValidationPipe(createRoomSchema)) createRoomDto: CreateRoomDto){ 
-        return this.adminService.addRoom(createRoomDto);
+    addRoom(@Body() body: {name: string, capacity: number, floor: number, is_active: boolean, facilities: number[]}){ 
+        return this.adminService.addRoom(body);
     }
 
     @Delete('rooms/:id')
     deactivateRoom(@Param('id', ParseIntPipe) roomId: number){
         return this.adminService.deactivateRoom(roomId);
+    }
+
+    @Post('facilities')
+    addFacility(@Body() facilityData: {name: string}){
+        return this.adminService.addFacility(facilityData);
+    }
+
+    @Get('facilities')
+    getAllFacilities(){
+        return this.adminService.getAllFacilities();
+    }
+
+    @Delete('facilities/:id')
+    deleteFacility(@Param('id', ParseIntPipe) facilityId: number){
+        return this.adminService.deleteFacility(facilityId);
     }
 }

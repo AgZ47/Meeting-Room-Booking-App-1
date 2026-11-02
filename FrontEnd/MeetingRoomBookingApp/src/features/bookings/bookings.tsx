@@ -14,6 +14,8 @@ import { Textarea } from "../../common/ui/textarea"
 import {z} from "zod"
 import { features as adminBookingsFeatures } from "../adminBookings/adminBookings"
 import type { bookingsResponse } from "../adminBookings/api/adminApiSlice"
+import { useGetAllRoomsQuery } from "../rooms/api/roomsApiSlice"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../common/ui/select"
 
 const features = tableFeatures({
     columnVisibilityFeature
@@ -31,6 +33,7 @@ export const Bookings = () => {
     const token = useSelector((state: RootState) => (state.auth.usertoken))
     const [isAddBookingOpen,setIsAddBookingOpen] = useState<boolean>(false)
     const {data, isLoading, isError, refetch} = useGetAllUserBookingsQuery(undefined, {skip: !token})
+    const {data: roomsData, refetch: refetchRooms} = useGetAllRoomsQuery()
     const [ postData ] = usePostUserBookingMutation()
     const [cancelData] = useCancelUserBookingMutation()
 
@@ -49,6 +52,8 @@ export const Bookings = () => {
         }
     ]
 
+    const rooms = roomsData?.roomData ?? []
+
     const bookings = data?.data ?? []
     const sortedBookings = [...bookings].sort((a,b) => a.bookingId - b.bookingId)
 
@@ -61,13 +66,10 @@ export const Bookings = () => {
             purpose:'',
         },
         onSubmit: async ({value}) => {
-            console.log(value)
 
             const parsedValue = meetingBookingSchema.parse(value)
 
-            const result = await postData(parsedValue).unwrap()
-
-            console.log(result)
+            await postData(parsedValue).unwrap()
 
             setIsAddBookingOpen(false)
             addBookingForm.reset()
@@ -92,7 +94,7 @@ export const Bookings = () => {
         <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
         <h2 className="text-lg font-semibold">Login required</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-            Please log in to view meeting rooms.
+            Please log in to view bookings.
         </p>
         </div>
     );
@@ -103,7 +105,7 @@ export const Bookings = () => {
         <div className="mx-auto flex min-h-64 items-center justify-center">
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
-            Loading meeting rooms...
+            Loading meeting bookings...
         </div>
         </div>
     );
@@ -112,9 +114,9 @@ export const Bookings = () => {
     if (isError) {
     return (
         <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
-        <h2 className="font-semibold">Unable to load rooms</h2>
+        <h2 className="font-semibold">Unable to load bookingss</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-            Something went wrong while retrieving the room list.
+            Something went wrong while retrieving the bookings list.
         </p>
         <Button className="mt-5" variant="outline" onClick={() => refetch()}>
             Try again
@@ -128,7 +130,7 @@ export const Bookings = () => {
             <Card>
                 <CardHeader className="flex flex-row justify-between">
                     <h2 className="text-xl font-semibold">My Bookings</h2>
-                    <Button onClick={() => setIsAddBookingOpen(true)}>Book Meeting Room+</Button>
+                    <Button onClick={() => {setIsAddBookingOpen(true); refetchRooms()}}>Book Meeting Room+</Button>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -180,14 +182,37 @@ export const Bookings = () => {
                                         <FieldLabel>Room ID</FieldLabel>
                                         <addBookingForm.Field name="room_id">
                                             {(field) => (
-                                                <Input
-                                                    id="add-booking-id"
-                                                    value={field.state.value}
-                                                    type="number"
-                                                    onChange={(e) => field.handleChange(Number(e.target.value))}
-                                                    placeholder="Meeting Room ID"
+                                                <Select
+                                                    items={rooms.map((room) => ({
+                                                        label: room.name,
+                                                        value: room.id.toString(),
+                                                    }))}
+                                                    value={field.state.value?.toString() ?? ""}
+                                                    onValueChange={(value) => {
+                                                        if (value !== null) {
+                                                            field.handleChange(Number(value));
+                                                        }
+                                                    }}
                                                     required
-                                                />
+                                                >
+                                                    <SelectTrigger className="w-full max-w-48">
+                                                        <SelectValue placeholder="Select a room" />
+                                                    </SelectTrigger>
+
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            <SelectLabel>Rooms</SelectLabel>
+                                                            {rooms.map((room) => (
+                                                                <SelectItem
+                                                                    key={room.id}
+                                                                    value={room.id.toString()}
+                                                                >
+                                                                    {room.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
                                             )}
                                         </addBookingForm.Field>
                                     </Field>

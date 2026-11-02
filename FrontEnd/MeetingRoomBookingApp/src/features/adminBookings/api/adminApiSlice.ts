@@ -34,7 +34,9 @@ type GetBookingsResponse = {
 // "userName": "Aby Iype",
 // "roomName": "Gemba2"
 
-type addRooms = Omit<roomsType, 'id' | 'is_active'>
+type addRooms = Omit<roomsType, 'facilities'> & {
+    facilities: number[]
+}
 
 type updateRoomsType = Omit<roomsType, 'is_active'>
 
@@ -63,14 +65,14 @@ export const adminApiSlice = createApi({
                 body: updatedVals
             })
         }),
-        addRoom: builder.mutation<addRooms, Partial<roomsType>>({
+        addRoom: builder.mutation<roomsType, Partial<addRooms>>({
             query: (room) => ({
                 url: '/rooms',
                 method: 'POST',
                 body: room
             })
         }),
-        updateRoom: builder.mutation<Partial<roomsType>, updateRoomsType>({
+        updateRoom: builder.mutation<Partial<roomsType>, Partial<addRooms>>({
             query: (updatedRoom) => ({
                 url: '/rooms',
                 method: 'PUT',
@@ -94,8 +96,24 @@ export const adminApiSlice = createApi({
                 url: `bookings/${id}/delete`,
                 method:'DELETE'
             })
+        }),
+        getAllFacilities: builder.query<{facilitiesData: {id: number, name: string}[]}, void>({
+            query: () => '/facilities'
+        }),
+        addFacility: builder.mutation<{}, {name: string}>({
+            query: (facility) => ({
+                url: '/facilities',
+                method: 'POST',
+                body: facility
+            })
+        }),
+        deleteFacility: builder.mutation<{}, number>({
+            query: (id) => ({
+                url: `/facilities/${id}`,
+                method: 'DELETE'
+            })
         })
     })
 })
 
-export const {useGetBookingsQuery, useUpdateBookingsMutation, useAddRoomMutation, useUpdateRoomMutation, useDeactivateRoomMutation, useCancelBookingMutation, useDeleteBookingMutation} = adminApiSlice
+export const {useGetBookingsQuery, useUpdateBookingsMutation, useAddRoomMutation, useUpdateRoomMutation, useDeactivateRoomMutation, useCancelBookingMutation, useDeleteBookingMutation, useGetAllFacilitiesQuery, useAddFacilityMutation, useDeleteFacilityMutation} = adminApiSlice

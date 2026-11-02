@@ -1,81 +1,114 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service.js';
-import type { CreateRoomZSchema, CreateRoomDto } from './dto/create-room.dto.js';
-import { roomsTable, bookingsTable, usersTable, facilitiesTable, roomFacilitiesTable } from '../../db/index.js';
+import type { CreateRoomDto } from './dto/create-room.dto.js';
+import { roomsTable, bookingsTable, usersTable, facilitiesTable, roomsToFacilitiesTable } from '../../db/index.js';
 import { eq, sql, inArray } from 'drizzle-orm';
 
 @Injectable()
 export class AdminService {
     constructor(private readonly database: DatabaseService){}
 
-    
-    async addRoom(createRoomDto: CreateRoomZSchema) {
-        const { facilities, ...roomDetails } = createRoomDto;
+    async addRoom(body: {name: string, capacity: number, floor: number, is_active: boolean, facilities: number[]}){
+        return await this.database.db.transaction(async (tx) => {
+            // 1. Validate that the supplied facilities exist
+            const facilities = body.facilities.length
+            ? await tx
+                .select({ id: facilitiesTable.id })
+                .from(facilitiesTable)
+                .where(inArray(facilitiesTable.id, body.facilities))
+            : [];
 
-        const roomData = await this.database.db.transaction(async (tx) => {
+            if (facilities.length !== new Set(body.facilities).size) {
+            throw new BadRequestException('One or more facilities do not exist');
+            }
 
-            // Insert room
+            // 2. Insert the room
             const [newRoom] = await tx
-                .insert(roomsTable)
-                .values(roomDetails)
-                .returning();
+            .insert(roomsTable)
+            .values({
+                name: body.name,
+                capacity: body.capacity,
+                floor: body.floor,
+            })
+            .returning();
+
+            // 3. Insert room-facility mappings
+            if (body.facilities.length > 0) {
+            await tx.insert(roomsToFacilitiesTable).values(
+                body.facilities.map((facilityId) => ({
+                roomId: newRoom.id,
+                facilityId,
+                })),
+            );
+            }
+
+            return newRoom;
+        });
+    }
+
+    async updateRoom(updateRoomDto: {id: number,name: string, capacity: number, floor: number, is_active: boolean, facilities: number[]}) {
+        const { id, facilities, ...updateData } = updateRoomDto;
+
+        if (id === undefined) {
+            throw new BadRequestException('Room ID is required for updating');
+        }
+
+        return await this.database.db.transaction(async (tx) => {
+            // 1. Check whether the room exists
+            const [existingRoom] = await tx
+            .select()
+            .from(roomsTable)
+            .where(eq(roomsTable.id, id));
+
+            if (!existingRoom) {
+            throw new NotFoundException('Room not found');
+            }
+
+            // 2. Validate facilities
+            if (facilities !== undefined) {
+            const existingFacilities = facilities.length
+                ? await tx
+                    .select({ id: facilitiesTable.id })
+                    .from(facilitiesTable)
+                    .where(inArray(facilitiesTable.id, facilities))
+                : [];
+
+            if (existingFacilities.length !== new Set(facilities).size) {
+                throw new BadRequestException(
+                'One or more facilities do not exist',
+                );
+            }
+            }
+
+            // 3. Update room information
+            const [roomData] = await tx
+            .update(roomsTable)
+            .set(updateData)
+            .where(eq(roomsTable.id, id))
+            .returning();
+
+            // 4. Replace facility mappings only if facilities were supplied
+            if (facilities !== undefined) {
+            await tx
+                .delete(roomsToFacilitiesTable)
+                .where(eq(roomsToFacilitiesTable.roomId, id));
 
             if (facilities.length > 0) {
-
-                // Fetch matching facilities
-                const matchingFacilities = await tx
-                    .select({
-                        id: facilitiesTable.id,
-                        name: facilitiesTable.name,
-                    })
-                    .from(facilitiesTable)
-                    .where(inArray(facilitiesTable.name, facilities));
-
-                // Check whether every requested facility exists
-                if (matchingFacilities.length !== new Set(facilities).size) {
-                    throw new NotFoundException(
-                        'One or more facilities do not exist'
-                    );
-                }
-
-                // Insert room-facility mappings
-                await tx.insert(roomFacilitiesTable).values(
-                    matchingFacilities.map((facility) => ({
-                        room_id: newRoom.id,
-                        facility_id: facility.id,
-                    }))
+                await tx.insert(roomsToFacilitiesTable).values(
+                facilities.map((facilityId) => ({
+                    roomId: id,
+                    facilityId,
+                })),
                 );
+            }
             }
 
             return {
-                ...newRoom,
-                facilities,
+            roomData,
+            message: 'Room updated successfully',
             };
         });
-
-        return {
-            roomData,
-            message: 'Room added successfully',
-        };
-    }
-
-
-    async updateRoom(updateRoomDto: CreateRoomDto){
-        const {id, ...updateData} = updateRoomDto;
-
-        if(id === undefined){
-            throw new UnauthorizedException("Room ID is required for updating");
         }
-
-        const roomData = await this.database.db.update(roomsTable).set(updateData).where(eq(roomsTable.id, id)).returning();
-
-        if(roomData.length === 0){
-            throw new NotFoundException("Room not found or no changes made");
-        }
-
-
-        return {roomData: roomData, message: "Room updated successfully"};
-    }
 
     async deactivateRoom(roomId: number){
         if(roomId === undefined){
@@ -131,5 +164,26 @@ export class AdminService {
         }
 
         return {bookingData: bookingData, message: "Booking deleted successfully"};
+    }
+
+    async addFacility(facilityData: {name:string}){
+        const facility = await this.database.db.insert(facilitiesTable).values(facilityData).returning();
+
+        return {facilityData: facility, message: "Facility added successfully"};
+    }
+
+    async getAllFacilities() {
+        const facilities = await this.database.db.select().from(facilitiesTable);
+        return {facilitiesData: facilities, message: "Facilities retrieved successfully"};
+    }
+
+    async deleteFacility(facilityId: number){
+        const facilityData = await this.database.db.delete(facilitiesTable).where(eq(facilitiesTable.id, facilityId)).returning();
+
+        if(!facilityData){
+            throw new NotFoundException("Facility not found or already deleted");
+        }
+
+        return {facilityData: facilityData, message: "Facility deleted successfully"};
     }
 }

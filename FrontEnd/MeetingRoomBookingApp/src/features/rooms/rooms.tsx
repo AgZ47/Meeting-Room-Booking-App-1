@@ -4,7 +4,7 @@ import type { RootState } from "../../common/store";
 import { tableFeatures, useTable, type CellContext, type ColumnDef, columnVisibilityFeature } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
-import { useAddRoomMutation, useDeactivateRoomMutation, useUpdateRoomMutation } from "../adminBookings/api/adminApiSlice";
+import { useAddRoomMutation, useDeactivateRoomMutation, useGetAllFacilitiesQuery, useUpdateRoomMutation, useAddFacilityMutation, useDeleteFacilityMutation } from "../adminBookings/api/adminApiSlice";
 import { useState } from "react";
 import { Card, CardContent,CardFooter} from "../../common/ui/card";
 import { useForm } from "@tanstack/react-form";
@@ -13,7 +13,7 @@ import { Input } from "../../common/ui/input";
 import { Checkbox } from "../../common/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../common/ui/radio-group";
 import { Field, FieldDescription, FieldLabel } from "../../common/ui/field";
-import { CircleCheck, Plus, ShieldCheck, ShieldX, SquarePen } from "lucide-react";
+import { CircleCheck, Plus, ShieldCheck, ShieldX, SquarePen, Trash } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../common/ui/dialog";
 
@@ -28,7 +28,7 @@ type rooms = {
     name: string,
     capacity: number,
     floor: number,
-    facilities: string[], 
+    facilities: {id: number, name:string}[], 
     is_active: boolean,
 }
 
@@ -36,7 +36,7 @@ const addRoomSchema = z.object({
     name: z.string().trim().min(1).max(100),
     capacity: z.number().int().positive(),
     floor: z.number().int().min(0),
-    facilities: z.array(z.string().trim().min(1)).default([]),
+    facilities: z.array(z.number().int().positive()).default([]),
     is_active: z.boolean().default(true),
 })
 
@@ -45,7 +45,7 @@ const updateRoomSchema = z.object({
     name: z.string().trim().min(1).max(100),
     capacity: z.number().int().positive(),
     floor: z.number().int().min(0),
-    facilities: z.array(z.string().trim().min(1)).default([]),
+    facilities: z.array(z.number().int().positive()).default([]),
 })
 
 export const Rooms = () => {
@@ -53,22 +53,15 @@ export const Rooms = () => {
     const token = useSelector((state: RootState) => state.auth.usertoken);
     const userRole = useSelector((state: RootState) => state.auth.role);
     const { data, isLoading, isError, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
+    const {data: fetchedFacilities, refetch: refetchFacilities} = useGetAllFacilitiesQuery(undefined, { skip: !token })
+    const [addFacility] = useAddFacilityMutation()
+    const [deleteFacility] = useDeleteFacilityMutation()
     const [deactivateRoom] = useDeactivateRoomMutation()
     const [updateRoom] = useUpdateRoomMutation()
     const [addRoom] = useAddRoomMutation()
 
-    const availableFacilities = [
-        "TV", 
-        "Projector", 
-        "Video Conferencing system", 
-        "WhiteBoard", 
-        "Smart Board", 
-        "AC", 
-        "Sound Proof", 
-        "Coffee Bar", 
-        "Accessibility+"
-    ];
 
+    const availableFacilities = fetchedFacilities?.facilitiesData ?? [];
     const rooms = data?.roomData ?? [];
     const sortedrooms = [...rooms].sort((a, b) => a.id - b.id)
 
@@ -77,7 +70,7 @@ export const Rooms = () => {
             name: '',
             capacity: 1,
             floor: 0,
-            facilities: ["AC"] as string[],
+            facilities: [] as number[],
             is_active: true,
         },
         onSubmit: async ({value}) => {
@@ -93,7 +86,7 @@ export const Rooms = () => {
             name: '',
             capacity: 1,
             floor: 0,
-            facilities: ["AC"] as string[],
+            facilities: [] as number[],
         },
         onSubmit: async ({value}) => {
             await updateRoom(updateRoomSchema.parse(value))
@@ -107,7 +100,7 @@ export const Rooms = () => {
             name: "",   
         },
         onSubmit: async ({ value }) => {
-            // await onSubmitFacility(value);
+            await addFacility(value);
             console.log(value);
             facilityAddForm.reset();
         },
@@ -158,17 +151,17 @@ export const Rooms = () => {
         id: "facilities",
         header: "Facilities",
         cell: (info) => {
-        const facilities = info.getValue<string[]>();
+        const facilities = info.getValue<{ id: number, name: string }[]>();
 
         return (
             <div className="flex flex-wrap gap-1.5">
             {facilities.length ? (
                 facilities.map((facility) => (
                 <span
-                    key={facility}
+                    key={facility.id}
                     className="inline-flex rounded-md border bg-muted/40 px-2 py-1 text-xs font-medium"
                 >
-                    {facility}
+                    {facility.name}
                 </span>
                 ))
             ) : (
@@ -240,7 +233,7 @@ export const Rooms = () => {
                                     roomUpdateForm.setFieldValue("name", room.name);
                                     roomUpdateForm.setFieldValue("floor", room.floor);
                                     roomUpdateForm.setFieldValue("capacity", room.capacity);
-                                    roomUpdateForm.setFieldValue("facilities", room.facilities);
+                                    roomUpdateForm.setFieldValue("facilities", room.facilities.map(facility => facility.id));
                                     }}
                                 >
                                     <SquarePen className="size-5" />
@@ -325,11 +318,11 @@ export const Rooms = () => {
                 {userRole === "admin" && (
                     <DialogTrigger render={
                         <div className="flex flex-row gap-2">
-                            <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => setActiveModal("editFacilities")}>
+                            <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => {setActiveModal("editFacilities"); refetchFacilities()}}>
                                 <Plus/>
                                 Add facilities
                             </Button>    
-                            <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => setActiveModal("addRoom")}>
+                            <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => {setActiveModal("addRoom"); refetch()}}>
                                 <Plus/>
                                 Add room
                             </Button>
@@ -433,6 +426,7 @@ export const Rooms = () => {
                     <Button
                     variant="outline"
                     className="mt-5"
+                    onClick={() => {setActiveModal("addRoom"); refetch()}}
                     >
                         Add your first room
                     </Button>
@@ -526,25 +520,25 @@ export const Rooms = () => {
                         <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
                         {availableFacilities.map((facility, index) => (
                             <label
-                            key={facility}
+                            key={facility.id}
                             className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-muted/50"
                             >
                             <Checkbox
                                 id={`add-facility-${index}`}
-                                checked={field.state.value.includes(facility)}
+                                checked={field.state.value.includes(facility.id)}
                                 onCheckedChange={(checked) => {
                                 if (checked === true) {
-                                    if (!field.state.value.includes(facility)) {
-                                    field.pushValue(facility);
+                                    if (!field.state.value.includes(facility.id)) {
+                                    field.pushValue(facility.id);
                                     }
                                 } else {
                                     const index =
-                                    field.state.value.indexOf(facility);
+                                    field.state.value.indexOf(facility.id);
                                     if (index !== -1) field.removeValue(index);
                                 }
                                 }}
                             />
-                            {facility}
+                            {facility.name}
                             </label>
                         ))}
                         </div>
@@ -584,8 +578,8 @@ export const Rooms = () => {
                 </form>
             </div>
 
-            <DialogFooter className="justify-end gap-2 border-t px-5 py-4 sm:px-6">
-                <DialogClose>
+            <DialogFooter className="justify-end gap-2 m-1 border-t px-5 py-4 sm:px-6">
+                <DialogClose className="flex gap-2">
                     <Button
                             variant="outline"
                             onClick={() => {
@@ -679,41 +673,41 @@ export const Rooms = () => {
                             Update the facilities available in this room.
                             </FieldDescription>
 
-                            <roomUpdateForm.Field name="facilities">
-                            {(field) => (
-                                <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
-                                {availableFacilities.map((facility, index) => (
-                                    <label
-                                    key={facility}
-                                    className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-muted/50"
-                                    >
-                                    <Checkbox
-                                        id={`update-facility-${index}`}
-                                        checked={field.state.value.includes(facility)}
-                                        onCheckedChange={(checked) => {
-                                        if (checked === true) {
-                                            if (!field.state.value.includes(facility)) {
-                                            field.pushValue(facility);
+                                <roomUpdateForm.Field name="facilities">
+                                {(field) => (
+                                    <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
+                                    {availableFacilities.map((facility, index) => (
+                                        <label
+                                        key={facility.id}
+                                        className="flex cursor-pointer items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-muted/50"
+                                        >
+                                        <Checkbox
+                                            id={`update-facility-${index}`}
+                                            checked={field.state.value.includes(facility.id)}
+                                            onCheckedChange={(checked) => {
+                                            if (checked === true) {
+                                                if (!field.state.value.includes(facility.id)) {
+                                                field.pushValue(facility.id);
+                                                }
+                                            } else {
+                                                const index =
+                                                field.state.value.indexOf(facility.id);
+                                                if (index !== -1) field.removeValue(index);
                                             }
-                                        } else {
-                                            const index =
-                                            field.state.value.indexOf(facility);
-                                            if (index !== -1) field.removeValue(index);
-                                        }
-                                        }}
-                                    />
-                                    {facility}
-                                    </label>
-                                ))}
-                                </div>
-                            )}
+                                            }}
+                                        />
+                                        {facility.name}
+                                        </label>
+                                    ))}
+                                    </div>
+                                )}
                             </roomUpdateForm.Field>
                         </Field>
                         </form>
                     </div>
 
-                    <DialogFooter className="justify-end gap-2 border-t px-5 py-4 sm:px-6">
-                        <DialogClose>
+                    <DialogFooter className="justify-end gap-2 m-1 border-t px-5 py-4 sm:px-6">
+                        <DialogClose className="flex gap-2">
                             <Button
                                 variant="outline"
                                 onClick={() => {
@@ -794,7 +788,10 @@ export const Rooms = () => {
                                     key={index} 
                                     className="px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                                     >
-                                    {facility}
+                                    {facility.name}
+                                    <Button onClick={() => {deleteFacility(facility.id); refetchFacilities()}} variant="ghost" size="sm" className="float-right text-red-500 hover:bg-red-50 hover:text-red-700">
+                                        <Trash/>
+                                    </Button>
                                     </li>
                                 ))}
                                 
@@ -808,8 +805,8 @@ export const Rooms = () => {
                             </div>
                         </div>
 
-                        <DialogFooter className="justify-end gap-2 bg-slate-50/50 px-5 py-4 sm:px-6">
-                            <DialogClose>
+                        <DialogFooter className="justify-end gap-2 m-1 bg-slate-50/50 px-5 py-4 sm:px-6">
+                            <DialogClose className="flex gap-2">
                                 <Button
                                     variant="outline"
                                     onClick={() => facilityAddForm.reset()}
@@ -825,7 +822,7 @@ export const Rooms = () => {
                                 </Button>
                             </DialogClose>
                         </DialogFooter>
-                        </DialogContent>
+                    </DialogContent>
                 </>
             }
         </DialogContent>

@@ -82,7 +82,7 @@ export const LoginPage = () => {
                 <CardTitle>Login</CardTitle>
                 <CardDescription>Enter your credentials to access your account</CardDescription>
                 <CardAction>
-                    <Button className="bg-sky-600" id='navigate to signup' onClick={() => navigate('/register')}>SignUp</Button>
+                    <Button id='navigate to signup' onClick={() => navigate('/register')}>SignUp</Button>
                 </CardAction>
             </CardHeader>
             <CardContent>
@@ -128,7 +128,7 @@ export const LoginPage = () => {
                 </form>
             </CardContent>
             <CardFooter>
-                <Button className="bg-sky-600" type='submit' form="login-form">Login</Button>
+                <Button type='submit' form="login-form">Login</Button>
             </CardFooter>
             </Card>
         </div>
