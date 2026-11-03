@@ -325,6 +325,7 @@ export const Bookings = () => {
               <ButtonGroup>
                 <Button
                   variant="outline"
+                  className="bg-gray-100"
                   onClick={() =>
                     setCurrentWeek(addWeeks(currentWeek, -1))
                   }
@@ -348,6 +349,7 @@ export const Bookings = () => {
 
                 <Button
                   variant="outline"
+                  className="bg-gray-100"
                   onClick={() =>
                     setCurrentWeek(addWeeks(currentWeek, 1))
                   }

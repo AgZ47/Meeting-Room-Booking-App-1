@@ -13,7 +13,7 @@ import { Button } from "./common/ui/button";
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex flex-col items-center gap-1 rounded-lg px-1 py-3 text-sm font-medium transition-colors overflow-hidden w-full ${
       isActive
-        ? "bg-[#91A5BF] text-white/80 font-semibold shadow-sm"
+        ? "bg-[#174875]/100 text-white/80 font-semibold shadow-sm"
         : "text-white/80 hover:bg-[#174875] text-white"
     }`;
 
@@ -28,7 +28,7 @@ function App() {
       { !isAuthPage && <aside className="group sticky top-0 flex items-center h-screen flex-col overflow-hidden whitespace-nowrap border-r border-sky-200 px-1 py-6 shadow-sm transition-all duration-300 w-20 bg-[#135893]">
         
         <NavLink to="/rooms" className="mb-8 flex items-center gap-4 px-1">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-l font-bold shadow-sm transition-all outline-3 outline-black hover:outline-gray-500">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-l text-[#174875] font-bold shadow-sm transition-all outline-3 outline-black hover:outline-gray-500">
             LTS
           </div>
         </NavLink>
@@ -63,7 +63,7 @@ function App() {
                 className={({ isActive }) =>
                   `flex items-center gap-4 rounded-lg p-3 text-sm font-semibold transition overflow-hidden ${
                     isActive
-                      ? "bg-[#91A5BF] text-sky-700 shadow-sm"
+                      ? "bg-[#174875]/50 text-sky-700 shadow-sm"
                       : "text-white hover:bg-[#174875]"
                   }`
                 }

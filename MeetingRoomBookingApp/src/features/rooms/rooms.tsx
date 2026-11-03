@@ -1,11 +1,11 @@
 import { useSelector } from "react-redux";
 import { useGetAllRoomsQuery } from "./api/roomsApiSlice"
 import type { RootState } from "../../common/store";
-import { tableFeatures, useTable, type CellContext, type ColumnDef, columnVisibilityFeature } from "@tanstack/react-table";
+import { tableFeatures, useTable, type CellContext, type ColumnDef, columnVisibilityFeature, columnResizingFeature, columnSizingFeature, type ColumnResizeMode, type ColumnResizeDirection } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
 import { useAddRoomMutation, useDeactivateRoomMutation, useGetAllFacilitiesQuery, useUpdateRoomMutation, useAddFacilityMutation, useDeleteFacilityMutation } from "../adminBookings/api/adminApiService";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent,CardFooter} from "../../common/ui/card";
 import { useForm } from "@tanstack/react-form";
 import {z} from "zod"
@@ -19,6 +19,8 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 
 const features = tableFeatures({
     columnVisibilityFeature,
+    columnResizingFeature, 
+    columnSizingFeature
 })
 
 type modal = "addRoom" | "updateRoom" | "editFacilities" | null
@@ -254,6 +256,9 @@ export const Rooms = () => {
         : []),
     ];
 
+    const [columnResizeMode] = React.useState<ColumnResizeMode>("onChange");
+    const [columnResizeDirection] = React.useState<ColumnResizeDirection>("ltr")
+
     const table = useTable({
         key: "roomstable",
         features,
@@ -268,7 +273,7 @@ export const Rooms = () => {
 
     if (!token) {
     return (
-        <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
+        <div className="mx-auto mt-12 max-w-md rounded-md border p-8 text-center">
         <h2 className="text-lg font-semibold">Login required</h2>
         <p className="mt-2 text-sm text-muted-foreground">
             Please log in to view meeting rooms.
@@ -290,7 +295,7 @@ export const Rooms = () => {
 
     if (isError) {
     return (
-        <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
+        <div className="mx-auto max-w-2xl rounded-md border p-8 text-center">
         <h2 className="font-semibold">Unable to load rooms</h2>
         <p className="mt-2 text-sm text-muted-foreground">
             Something went wrong while retrieving the room list.
