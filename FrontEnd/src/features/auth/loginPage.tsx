@@ -5,10 +5,12 @@ import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useLoginUserMutation } from './api/authApiService'
 import { useDispatch } from 'react-redux'
-import { setCredentials } from '../auth/api/authSlice'
+import { setCredentials } from './api/authSlice'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { Label } from '../../common/ui/label'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '../../common/ui/empty'
+import { LoaderCircle } from 'lucide-react'
 
 const inputSchema = z.object({
   email: z.email(),
@@ -66,11 +68,17 @@ export const LoginPage = () => {
 
     if (isLoading) {
         return (
-            <div className="mx-auto flex min-h-64 items-center justify-center">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
-                Loading...
-            </div>
+            <div className="w-full h-dvh flex justify-center items-center">
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia>
+                            <LoaderCircle className="animate-spin"/>
+                        </EmptyMedia>
+                        <EmptyTitle>
+                            Loading bookings...
+                        </EmptyTitle>
+                    </EmptyHeader>
+                </Empty>
             </div>
         );
     }

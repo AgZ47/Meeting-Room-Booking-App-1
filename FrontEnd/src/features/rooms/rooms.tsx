@@ -13,9 +13,10 @@ import { Input } from "../../common/ui/input";
 import { Checkbox } from "../../common/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../common/ui/radio-group";
 import { Field, FieldDescription, FieldLabel } from "../../common/ui/field";
-import { CircleCheck, Plus, ShieldCheck, ShieldX, SquarePen, Trash } from "lucide-react";
+import { CircleCheck, LoaderCircle, LogInIcon, Plus, ShieldCheck, ShieldX, SquarePen, Trash } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../common/ui/dialog";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty";
 
 const features = tableFeatures({
     columnVisibilityFeature,
@@ -42,12 +43,28 @@ const addRoomSchema = z.object({
     is_active: z.boolean().default(true),
 })
 
+const addRoomFormSchema = z.object({
+    name: z.string().trim().min(1).max(100),
+    capacity: z.number().int().positive(),
+    floor: z.number().int().min(0),
+    facilities: z.array(z.number().int().positive()),
+    is_active: z.boolean(),
+})
+
 const updateRoomSchema = z.object({
     id: z.number().int().positive(),
     name: z.string().trim().min(1).max(100),
     capacity: z.number().int().positive(),
     floor: z.number().int().min(0),
     facilities: z.array(z.number().int().positive()).default([]),
+})
+
+const updateRoomFormSchema = z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1).max(100),
+    capacity: z.number().int().positive(),
+    floor: z.number().int().min(0),
+    facilities: z.array(z.number().int().positive()),
 })
 
 export const Rooms = () => {
@@ -75,10 +92,18 @@ export const Rooms = () => {
             facilities: [] as number[],
             is_active: true,
         },
+        validators:{
+            onChange: addRoomFormSchema,
+        },
         onSubmit: async ({value}) => {
-            await addRoom(addRoomSchema.parse(value))
-            refetch();
-            roomAddForm.reset()
+            try{
+                const parsedValue = addRoomSchema.parse(value)
+                await addRoom(parsedValue)
+                refetch();
+                roomAddForm.reset()
+            }catch(err){
+                console.log("Failed to add room: ", err);
+            }
         }
     })
 
@@ -89,6 +114,9 @@ export const Rooms = () => {
             capacity: 1,
             floor: 0,
             facilities: [] as number[],
+        },
+        validators:{
+            onChange: updateRoomFormSchema
         },
         onSubmit: async ({value}) => {
             await updateRoom(updateRoomSchema.parse(value))
@@ -114,6 +142,21 @@ export const Rooms = () => {
     }   
 
     const columns: Array<ColumnDef<typeof features, rooms>> = [
+    {
+        accessorKey: "SL.NO",
+        header:"Sl No",
+        enableResizing: false,
+        minSize:30,
+        maxSize:40,
+        size: 35,
+        cell: (info) => (
+            <div className="flex h-full w-full justify-center">
+                <span className="text-center">
+                    {info.row.index}
+                </span>
+            </div>
+        )
+    },
     {
         accessorKey: "id",
         header: "ID",
@@ -151,7 +194,10 @@ export const Rooms = () => {
     {
         accessorKey: "facilities",
         id: "facilities",
-        header: "Facilities",
+        header: "Facilities",    
+        minSize: 80,
+        maxSize: 600,
+        size: 250,
         cell: (info) => {
         const facilities = info.getValue<{ id: number, name: string }[]>();
 
@@ -161,7 +207,7 @@ export const Rooms = () => {
                 facilities.map((facility) => (
                 <span
                     key={facility.id}
-                    className="inline-flex rounded-md border bg-muted/40 px-2 py-1 text-xs font-medium"
+                    className="inline-flex rounded-sm border bg-muted/20 px-2 py-1 text-xs font-medium"
                 >
                     {facility.name}
                 </span>
@@ -179,6 +225,7 @@ export const Rooms = () => {
         accessorKey: "is_active",
         id: "is_active",
         header: "Status",
+        enableResizing: false,
         cell: (info) => {
         const active = info.getValue<boolean>();
 
@@ -202,6 +249,7 @@ export const Rooms = () => {
             accessorKey: "action_room",
             id: "action_room",
             header: "Actions",
+            enableResizing: false,
             cell: (info: CellContext<typeof features, rooms, unknown>) => {
                 const room = info.row.original;
 
@@ -226,20 +274,18 @@ export const Rooms = () => {
                     </HoverCard>
                     <HoverCard>
                         <HoverCardTrigger delay={100} closeDelay={100} render={
-                            <DialogTrigger>
-                                <button
-                                    className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
-                                    onClick={() => {
-                                    setActiveModal("updateRoom")
-                                    roomUpdateForm.setFieldValue("id", room.id);
-                                    roomUpdateForm.setFieldValue("name", room.name);
-                                    roomUpdateForm.setFieldValue("floor", room.floor);
-                                    roomUpdateForm.setFieldValue("capacity", room.capacity);
-                                    roomUpdateForm.setFieldValue("facilities", room.facilities.map(facility => facility.id));
-                                    }}
-                                >
-                                    <SquarePen className="size-5" />
-                                </button>
+                            <DialogTrigger
+                                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-sky-600"
+                                onClick={() => {
+                                setActiveModal("updateRoom")
+                                roomUpdateForm.setFieldValue("id", room.id);
+                                roomUpdateForm.setFieldValue("name", room.name);
+                                roomUpdateForm.setFieldValue("floor", room.floor);
+                                roomUpdateForm.setFieldValue("capacity", room.capacity);
+                                roomUpdateForm.setFieldValue("facilities", room.facilities.map(facility => facility.id));
+                                }}
+                            >
+                                <SquarePen className="size-5" />
                             </DialogTrigger>
                         }/>
                         <HoverCardContent side="top">
@@ -264,45 +310,77 @@ export const Rooms = () => {
         features,
         columns,
         data: sortedrooms,
+        columnResizeMode,
+        columnResizeDirection,
         initialState: {
         columnVisibility: {
                 id: false,
             },
         },
+        defaultColumn: {
+            minSize: 80,
+            maxSize: 600,
+            size: 150,
+        },
     });
 
     if (!token) {
     return (
-        <div className="mx-auto mt-12 max-w-md rounded-md border p-8 text-center">
-        <h2 className="text-lg font-semibold">Login required</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-            Please log in to view meeting rooms.
-        </p>
+        <div className="w-full h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia>
+                        <LogInIcon/>
+                    </EmptyMedia>
+                    <EmptyTitle>
+                        Login Required
+                    </EmptyTitle>
+                </EmptyHeader>
+                <EmptyContent>
+                    <EmptyDescription>
+                        Please log in to view meeting rooms.
+                    </EmptyDescription>
+                </EmptyContent>
+            </Empty>
         </div>
     );
     }
 
     if (isLoading) {
     return (
-        <div className="mx-auto flex min-h-64 items-center justify-center">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
-            Loading meeting rooms...
-        </div>
+        <div className="w-full h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia>
+                        <LoaderCircle className="animate-spin"/>
+                    </EmptyMedia>
+                    <EmptyTitle>
+                        Loading meeting rooms...
+                    </EmptyTitle>
+                </EmptyHeader>
+            </Empty>
         </div>
     );
     }
 
     if (isError) {
     return (
-        <div className="mx-auto max-w-2xl rounded-md border p-8 text-center">
-        <h2 className="font-semibold">Unable to load rooms</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-            Something went wrong while retrieving the room list.
-        </p>
-        <Button className="mt-5" variant="outline" onClick={() => refetch()}>
-            Try again
-        </Button>
+        <div className="h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                  <EmptyTitle>
+                    Error
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    Something went wrong while retrieving the bookings list.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+                    Try again
+                  </Button>
+                </EmptyContent>
+            </Empty>
         </div>
     );
     }
@@ -321,18 +399,20 @@ export const Rooms = () => {
                 </h1>
             </div>
                 {userRole === "admin" && (
-                    <DialogTrigger render={
-                        <div className="flex flex-row gap-2">
-                            <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => {setActiveModal("editFacilities"); refetchFacilities()}}>
-                                <Plus/>
-                                Add facilities
-                            </Button>    
+                    <div className="flex flex-row gap-2">
+                        <DialogTrigger render={
+                                <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => {setActiveModal("editFacilities"); refetchFacilities()}}>
+                                    <Plus/>
+                                    Add facilities
+                                </Button>
+                        }/>
+                        <DialogTrigger render={    
                             <Button className="w-full sm:w-auto bg-[#135893] text-white hover:bg-[#174875]" onClick={() => {setActiveModal("addRoom"); refetch()}}>
                                 <Plus/>
                                 Add room
                             </Button>
-                        </div>
-                    }/>
+                        }/>
+                    </div>
                 )}
         </div>
 
@@ -370,8 +450,8 @@ export const Rooms = () => {
         <Card className="gap-0 overflow-hidden py-0 rounded-md">
         {rooms.length > 0 ? (
             <>
-            <div className="overflow-x-auto">
-                <Table>
+            <div className="overflow-x-auto w-full min-w-0">
+                <Table style={{width: "100%", tableLayout: "fixed"}}>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow
@@ -382,6 +462,8 @@ export const Rooms = () => {
                         <TableCell
                             key={header.id}
                             className="h-11 whitespace-nowrap text-xs font-semibold uppercase tracking-wide bg-[#135893] text-white px-3 border-r border-sky-700 last:border-r-0"
+                            onMouseDown={header.getResizeHandler()}
+                            style={{width: header.getSize()}}
                         >
                             {header.isPlaceholder
                             ? null
@@ -463,18 +545,30 @@ export const Rooms = () => {
                 >
                 <div className="grid gap-5 sm:grid-cols-2">
                     <Field className="space-y-2 sm:col-span-2">
-                    <FieldLabel htmlFor="add-name">Room name</FieldLabel>
-                    <roomAddForm.Field name="name">
-                        {(field) => (
-                        <Input
-                            id="add-name"
-                            value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="e.g. Conference Room A"
-                            required
-                        />
-                        )}
-                    </roomAddForm.Field>
+                        <roomAddForm.Field name="name">
+                            {(field) => (
+                                <div>
+                                    <FieldLabel htmlFor="add-name">Room name</FieldLabel>
+                                    <Input
+                                        id={field.name}
+                                        name={field.name}
+                                        value={field.state.value}
+                                        onChange={(e) => field.handleChange(e.target.value)}
+                                        placeholder="e.g. Conference Room A"
+                                        required
+                                    />
+                                    {!field.state.meta.isValid && (
+                                        <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </roomAddForm.Field>
                     </Field>
 
                     <Field className="space-y-2">
@@ -517,12 +611,12 @@ export const Rooms = () => {
                 <Field className="space-y-3">
                     <FieldLabel>Facilities</FieldLabel>
                     <FieldDescription className="mt-1 text-xs text-muted-foreground">
-                    Select all facilities available in this room.
+                        Select all facilities available in this room.
                     </FieldDescription>
 
                     <roomAddForm.Field name="facilities">
                     {(field) => (
-                        <div className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
+                        <div className="grid gap-3 rounded-sm border p-4 sm:grid-cols-2">
                         {availableFacilities.map((facility, index) => (
                             <label
                             key={facility.id}
@@ -584,19 +678,21 @@ export const Rooms = () => {
             </div>
 
             <DialogFooter className="justify-end gap-2 m-1 border-t px-5 py-4 sm:px-6">
-                <DialogClose className="flex gap-2">
+                <DialogClose render={
                     <Button
-                            variant="outline"
-                            onClick={() => {
-                            roomAddForm.reset();
-                            }}
-                        >
-                            Cancel
+                        variant="outline"
+                        onClick={() => {
+                        roomAddForm.reset();
+                        }}
+                    >
+                        Cancel
                     </Button>
+                }/>
+                <DialogClose render={
                     <Button type="submit" className="bg-[#135893] hover:bg-[#174875]" form="roomAdd-form">
                         Create room
                     </Button>
-                </DialogClose>
+                }/>
             </DialogFooter>
             </>
             }
@@ -712,7 +808,7 @@ export const Rooms = () => {
                     </div>
 
                     <DialogFooter className="justify-end gap-2 m-1 border-t px-5 py-4 sm:px-6">
-                        <DialogClose className="flex gap-2">
+                        <DialogClose render={
                             <Button
                                 variant="outline"
                                 onClick={() => {
@@ -723,14 +819,16 @@ export const Rooms = () => {
                             >
                                 Cancel
                             </Button>
+                        }/>
+                        <DialogClose render={
                             <Button 
                             className="bg-[#135893] hover:bg-[#174875] text-white" 
                             type="submit" 
                             form="roomUpdate-form"
                             >
-                            Save changes
+                                Save changes
                             </Button>
-                        </DialogClose>
+                        }/>
                     </DialogFooter>
                 </>
             }
@@ -811,13 +909,15 @@ export const Rooms = () => {
                         </div>
 
                         <DialogFooter className="justify-end gap-2 m-1 bg-slate-50/50 px-5 py-4 sm:px-6">
-                            <DialogClose className="flex gap-2">
+                            <DialogClose render={
                                 <Button
                                     variant="outline"
                                     onClick={() => facilityAddForm.reset()}
                                 >
                                     Close
                                 </Button>
+                            }/>
+                            <DialogClose render={
                                 <Button 
                                     type="submit" 
                                     form="facilityAdd-form"
@@ -825,7 +925,7 @@ export const Rooms = () => {
                                     >
                                     Add Facility
                                 </Button>
-                            </DialogClose>
+                            }/>
                         </DialogFooter>
                     </DialogContent>
                 </>

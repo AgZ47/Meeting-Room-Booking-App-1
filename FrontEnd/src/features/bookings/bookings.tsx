@@ -41,8 +41,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../common/ui/select";
-import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight, LoaderCircle, LogInIcon, X } from "lucide-react";
 import { ButtonGroup } from "../../common/ui/button-group";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty";
 
 // --------------------------------------------------
 // Calendar configuration
@@ -241,10 +242,9 @@ export const Bookings = () => {
 
       await postData(parsedValue).unwrap();
 
+      await refetch();
       setIsAddBookingOpen(false);
       addBookingForm.reset();
-
-      await refetch();
     },
   });
 
@@ -254,45 +254,62 @@ export const Bookings = () => {
 
   if (!token) {
     return (
-      <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
-        <h2 className="text-lg font-semibold">
-          Login required
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Please log in to view bookings.
-        </p>
-      </div>
+      <div className="w-full h-dvh flex justify-center items-center">
+                  <Empty>
+                      <EmptyHeader>
+                          <EmptyMedia>
+                              <LogInIcon/>
+                          </EmptyMedia>
+                          <EmptyTitle>
+                              Login Required
+                          </EmptyTitle>
+                      </EmptyHeader>
+                      <EmptyContent>
+                          <EmptyDescription>
+                              Please log in to view bookings.
+                          </EmptyDescription>
+                      </EmptyContent>
+                  </Empty>
+              </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="mx-auto flex min-h-64 items-center justify-center">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
-          Loading meeting bookings...
+      <div className="w-full h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia>
+                      <LoaderCircle className="animate-spin"/>
+                    </EmptyMedia>
+                    <EmptyTitle>
+                        Loading bookings...
+                    </EmptyTitle>
+                </EmptyHeader>
+            </Empty>
         </div>
-      </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
-        <h2 className="font-semibold">
-          Unable to load bookings
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong while retrieving your bookings.
-        </p>
-        <Button
-          className="mt-5"
-          variant="outline"
-          onClick={() => refetch()}
-        >
-          Try again
-        </Button>
-      </div>
+      <div className="h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                  <EmptyTitle>
+                    Error
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    Something went wrong while retrieving the bookings list.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+                    Try again
+                  </Button>
+                </EmptyContent>
+            </Empty>
+        </div>
     );
   }
 
@@ -411,7 +428,7 @@ export const Bookings = () => {
                       <div
                         className={`mx-auto mt-1 flex size-8 items-center justify-center rounded-full text-sm font-semibold ${
                           isToday
-                            ? "bg-blue-500 text-primary-foreground"
+                            ? "bg-sky-600 text-primary-foreground"
                             : "text-white"
                         }`}
                       >
@@ -528,17 +545,13 @@ export const Bookings = () => {
                                         <HoverCardTrigger delay={10} closeDelay={100}>
                                         <div className="flex h-full flex-col overflow-hidden">
                                             <p className="truncate font-semibold">
-                                            {booking.roomName}
+                                              {booking.roomName}
                                             </p>
-{/* 
-                                            <p className="mt-0.5 line-clamp-2 break-words">
-                                            {booking.purpose}
-                                            </p> */}
 
                                             <p className="mt-1 truncate opacity-75">
-                                            {booking.startTime.slice(0, 5)}{" "}
-                                            –{" "}
-                                            {booking.endTime.slice(0, 5)}
+                                              {booking.startTime.slice(0, 5)}{" "}
+                                              {" "}
+                                              {booking.endTime.slice(0, 5)}
                                             </p>
 
                                             <div className="mt-auto flex items-center justify-between gap-1">
@@ -549,6 +562,7 @@ export const Bookings = () => {
                                             {!isCancelled &&
                                                 !isCompleted && (
                                                 <button
+                                                    title="Cancel Meeting"
                                                     type="button"
                                                     className="shrink-0 rounded px-1 py-0.5 font-medium hover:bg-black/10"
                                                     onClick={async () => {
@@ -566,17 +580,20 @@ export const Bookings = () => {
                                                     }
                                                     }}
                                                 >
-                                                    Cancel
+                                                    <X size={16} color="red"/>
                                                 </button>
                                                 )}
                                             </div>
                                         </div>
                                         </HoverCardTrigger>
-                                            <HoverCardContent>
+                                            <HoverCardContent side={"top"}>
                                                 <div>
-                                                    <p className="mt-0.5 line-clamp-2 break-words">
-                                                        Purpose: {booking.purpose}
-                                                    </p>
+                                                  <p className="font-bold">
+                                                    Purpose
+                                                  </p>
+                                                  <p className="mt-0.5 line-clamp-2 break-words">
+                                                      {booking.purpose}
+                                                  </p>
                                                 </div>
                                             </HoverCardContent>
                                         </HoverCard>

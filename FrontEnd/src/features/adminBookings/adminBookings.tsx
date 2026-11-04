@@ -7,14 +7,26 @@ import type {bookingsResponse} from "./api/adminApiService"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../common/ui/table";
 import { Button } from "../../common/ui/button";
 import { Card, CardFooter} from "../../common/ui/card";
-import { CircleAlert, CircleCheck, CircleX, RotateCcw, SquareX, Trash } from "lucide-react";
+import { CircleAlert, CircleCheck, CircleX, LoaderCircle, LogInIcon, RefreshCcw, RotateCcw, SquareX, Trash } from "lucide-react";
 import { useMemo } from "react";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty";
 
 export const features = tableFeatures({
   columnVisibilityFeature
 })
 
 export const column: ColumnDef<typeof features, bookingsResponse>[] = [
+  {
+    accessorKey: "SL.NO",
+    header:"Sl No",
+    cell: (info) => (
+        <div className="flex h-full w-full justify-center">
+            <span className="text-center">
+                {info.row.index}
+            </span>
+        </div>
+    )
+  },
   {
     accessorKey:'bookingId',
     id:'bookingId',
@@ -119,7 +131,8 @@ export const AdminBookings = () => {
           {/* Wrap icons in semantic buttons for better accessibility and hover states */}
           <button 
             title="Cancel Booking"
-            className="text-red-500 hover:text-red-700 transition-colors"
+            className="text-red-500 hover:text-red-700 transition-colors disabled:text-gray-500/50 disabled:cursor-not-allowed"
+            disabled={info.row.original.status==="confirmed" ? false : true}
             onClick={() => {
               cancelBooking(info.row.original.bookingId);
               refetch();
@@ -160,36 +173,64 @@ export const AdminBookings = () => {
 
   if (!token) {
     return (
-        <div className="mx-auto mt-12 max-w-md rounded-xl border p-8 text-center">
-        <h2 className="text-lg font-semibold">Login required</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-            Please log in to view all bookings.
-        </p>
+        <div className="w-full h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia>
+                        <LogInIcon/>
+                    </EmptyMedia>
+                    <EmptyTitle>
+                        Login Required
+                    </EmptyTitle>
+                </EmptyHeader>
+                <EmptyContent>
+                    <EmptyDescription>
+                        Please log in to view meeting rooms.
+                    </EmptyDescription>
+                </EmptyContent>
+            </Empty>
         </div>
-    );
+      );
     }
 
     if (isLoading) {
     return (
-        <div className="mx-auto flex min-h-64 items-center justify-center">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span className="size-5 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground" />
-            Loading All Bookings...
-        </div>
+        <div className="w-full h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia>
+                      <LoaderCircle className="animate-spin"/>
+                    </EmptyMedia>
+                    <EmptyTitle>
+                        Loading bookings...
+                    </EmptyTitle>
+                </EmptyHeader>
+            </Empty>
         </div>
     );
     }
 
     if (isError) {
     return (
-        <div className="mx-auto max-w-2xl rounded-xl border p-8 text-center">
-        <h2 className="font-semibold">Unable to load bookings</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-            Something went wrong while retrieving the bookings list.
-        </p>
-        <Button className="mt-5" variant="outline" onClick={() => refetch()}>
-            Try again
-        </Button>
+        <div className="h-dvh flex justify-center items-center">
+            <Empty>
+                <EmptyHeader>
+                  <EmptyMedia>
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    Error
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    Something went wrong while retrieving the bookings list.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+                    <RotateCcw/>
+                    Try again
+                  </Button>
+                </EmptyContent>
+            </Empty>
         </div>
     );
     }
@@ -212,7 +253,7 @@ export const AdminBookings = () => {
         </div>
         <Button className="bg-[#135893]" onClick={() => refetch()}>
           Refresh
-          <RotateCcw/>
+          <RefreshCcw/>
         </Button>
       </div>
 

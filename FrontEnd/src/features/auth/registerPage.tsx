@@ -9,6 +9,8 @@ import { useDispatch } from "react-redux"
 import { setCredentials } from "./api/authSlice"
 import { Label } from "../../common/ui/label"
 import { useState } from "react"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty"
+import { LoaderCircle } from "lucide-react"
 
 const inputSchema = z.object({
     name: z.string().min(1).max(100),
@@ -19,7 +21,7 @@ const inputSchema = z.object({
 export const RegisterPage = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const [registerUser] = useRegisterUserMutation()
+    const [registerUser, {isLoading}] = useRegisterUserMutation()
     const [nameError, setNameError] = useState("")
     const [emailError, setEmailError] = useState("")
     const [passwordError, setPasswordError] = useState("")
@@ -66,6 +68,23 @@ export const RegisterPage = () => {
 
         }
     })
+
+    if (isLoading) {
+        return (
+            <div className="w-full h-dvh flex justify-center items-center">
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia>
+                            <LoaderCircle className="animate-spin"/>
+                        </EmptyMedia>
+                        <EmptyTitle>
+                            Loading bookings...
+                        </EmptyTitle>
+                    </EmptyHeader>
+                </Empty>
+            </div>
+        );
+    }
 
     return(
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">

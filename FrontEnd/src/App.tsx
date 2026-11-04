@@ -7,8 +7,8 @@ import { Bookings } from "./features/bookings/bookings";
 import type { RootState } from "./common/store";
 import { useSelector } from "react-redux";
 import { CalendarRange, LogIn, Presentation, ShieldCheck, User, UserPlus } from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "./common/ui/hover-card";
 import { Button } from "./common/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./common/ui/popover";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex flex-col items-center gap-1 rounded-lg px-1 py-3 text-sm font-medium transition-colors overflow-hidden w-full ${
@@ -86,13 +86,13 @@ function App() {
               </NavLink>
             </>
           ) : (
-            <HoverCard>
-              <HoverCardTrigger delay={100} closeDelay={100} render={
+            <Popover>
+              <PopoverTrigger delay={100} closeDelay={100} render={
                 <div className="flex items-center gap-4 rounded-xl bg-sky-700/50 p-2 border border-sky-500 overflow-hidden">
                   <User className="size-6 shrink-0 text-white" />
                 </div>
               }/>
-              <HoverCardContent side="right">
+              <PopoverContent side="right">
                 <div className="flex flex-col transition-opacity duration-300">
                   <span className="text-sm font-semibold truncate">
                     {userName}
@@ -102,8 +102,8 @@ function App() {
                   </span>
                   <Button onClick={() => {window.location.reload(); navigation.navigate('/');}}>Logout</Button>
                 </div>
-              </HoverCardContent>
-            </HoverCard>
+              </PopoverContent>
+            </Popover>
           )}
         </div>
       </aside>}
