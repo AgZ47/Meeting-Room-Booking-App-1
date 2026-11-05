@@ -13,7 +13,7 @@ if (!process.env.JWT_SECRET) {
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: {
-        expiresIn: '1h',
+        expiresIn: '1m',
       },
     }),
   ],

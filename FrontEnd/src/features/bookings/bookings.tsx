@@ -45,7 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../common/ui/select";
-import { ArrowBigLeft, ArrowBigRight, LoaderCircle, LogInIcon, Plus, X } from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight, LoaderCircle, LogInIcon, Plus, RotateCcw, X } from "lucide-react";
 import { ButtonGroup } from "../../common/ui/button-group";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty";
 import { toast } from "../../common/ui/toast";
@@ -215,6 +215,7 @@ export const Bookings = () => {
     data,
     isLoading,
     isError,
+    error,
     refetch,
   } = useGetAllUserBookingsQuery(undefined, {
     skip: !token,
@@ -313,6 +314,12 @@ export const Bookings = () => {
   }
 
   if (isError) {
+    if("data" in error && typeof error.data === "object" && error.data !== null){
+        if("message" in error.data && error.data.message === "Invalid or expired token"){
+            window.location.reload(); 
+            navigation.navigate('/');
+        }
+    }
     return (
       <div className="h-dvh flex justify-center items-center">
             <Empty>
@@ -326,6 +333,7 @@ export const Bookings = () => {
                 </EmptyHeader>
                 <EmptyContent>
                   <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+                    <RotateCcw/>
                     Try again
                   </Button>
                 </EmptyContent>

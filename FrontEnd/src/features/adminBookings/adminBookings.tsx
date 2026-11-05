@@ -116,7 +116,7 @@ export const column: ColumnDef<typeof features, bookingsResponse>[] = [
 
 export const AdminBookings = () => {
   const token = useSelector((state: RootState) => state.auth.usertoken);
-  const { data, isLoading, isError, refetch} = useGetBookingsQuery(undefined, { skip: !token });
+  const { data, isLoading, isError, refetch, error} = useGetBookingsQuery(undefined, { skip: !token });
   const [ cancelBooking ] = useCancelBookingMutation();
   const [ deleteBooking ] = useDeleteBookingMutation();
 
@@ -173,27 +173,27 @@ export const AdminBookings = () => {
 
   if (!token) {
     return (
-        <div className="w-full h-dvh flex justify-center items-center">
-            <Empty>
-                <EmptyHeader>
-                    <EmptyMedia>
-                        <LogInIcon/>
-                    </EmptyMedia>
-                    <EmptyTitle>
-                        Login Required
-                    </EmptyTitle>
-                </EmptyHeader>
-                <EmptyContent>
-                    <EmptyDescription>
-                        Please log in to view meeting rooms.
-                    </EmptyDescription>
-                </EmptyContent>
-            </Empty>
-        </div>
-      );
-    }
+      <div className="w-full h-dvh flex justify-center items-center">
+          <Empty>
+              <EmptyHeader>
+                  <EmptyMedia>
+                      <LogInIcon/>
+                  </EmptyMedia>
+                  <EmptyTitle>
+                      Login Required
+                  </EmptyTitle>
+              </EmptyHeader>
+              <EmptyContent>
+                  <EmptyDescription>
+                      Please log in to view meeting rooms.
+                  </EmptyDescription>
+              </EmptyContent>
+          </Empty>
+      </div>
+    );
+  }
 
-    if (isLoading) {
+  if (isLoading) {
     return (
         <div className="w-full h-dvh flex justify-center items-center">
             <Empty>
@@ -208,32 +208,38 @@ export const AdminBookings = () => {
             </Empty>
         </div>
     );
-    }
+  }
 
-    if (isError) {
-    return (
-        <div className="h-dvh flex justify-center items-center">
-            <Empty>
-                <EmptyHeader>
-                  <EmptyMedia>
-                  </EmptyMedia>
-                  <EmptyTitle>
-                    Error
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    Something went wrong while retrieving the bookings list.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button className="mt-5" variant="outline" onClick={() => refetch()}>
-                    <RotateCcw/>
-                    Try again
-                  </Button>
-                </EmptyContent>
-            </Empty>
-        </div>
-    );
+  if (isError) {
+    if("data" in error && typeof error.data === "object" && error.data !== null){
+        if("message" in error.data && error.data.message === "Invalid or expired token"){
+            window.location.reload(); 
+            navigation.navigate('/');
+        }
     }
+    return (
+      <div className="h-dvh flex justify-center items-center">
+        <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+              </EmptyMedia>
+              <EmptyTitle>
+                Error
+              </EmptyTitle>
+              <EmptyDescription>
+                Something went wrong while retrieving the bookings list.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+                <RotateCcw/>
+                Try again
+              </Button>
+            </EmptyContent>
+        </Empty>
+      </div>
+    );
+  }
 
   if (bookings.length === 0) {
     return <p>No bookings found.</p>;

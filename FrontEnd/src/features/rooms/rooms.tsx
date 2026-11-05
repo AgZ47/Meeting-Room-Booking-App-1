@@ -72,7 +72,7 @@ export const Rooms = () => {
     const [activeModal, setActiveModal] = useState<modal>(null)
     const token = useSelector((state: RootState) => state.auth.usertoken);
     const userRole = useSelector((state: RootState) => state.auth.role);
-    const { data, isLoading, isError, refetch} = useGetAllRoomsQuery(undefined, { skip: !token })
+    const { data, isLoading, isError, refetch, error} = useGetAllRoomsQuery(undefined, { skip: !token })
     const {data: fetchedFacilities, refetch: refetchFacilities} = useGetAllFacilitiesQuery(undefined, { skip: !token })
     const [addFacility] = useAddFacilityMutation()
     const [deleteFacility] = useDeleteFacilityMutation()
@@ -406,25 +406,31 @@ export const Rooms = () => {
     }
 
     if (isError) {
-    return (
-        <div className="h-dvh flex justify-center items-center">
-            <Empty>
-                <EmptyHeader>
-                  <EmptyTitle>
-                    Error
-                  </EmptyTitle>
-                  <EmptyDescription>
-                    Something went wrong while retrieving the bookings list.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button className="mt-5" variant="outline" onClick={() => refetch()}>
-                    Try again
-                  </Button>
-                </EmptyContent>
-            </Empty>
-        </div>
-    );
+        if("data" in error && typeof error.data === "object" && error.data !== null){
+            if("message" in error.data && error.data.message === "Invalid or expired token"){
+                window.location.reload(); 
+                navigation.navigate('/');
+            }
+        }
+        return (
+            <div className="h-dvh flex justify-center items-center">
+                <Empty>
+                    <EmptyHeader>
+                    <EmptyTitle>
+                        Error
+                    </EmptyTitle>
+                    <EmptyDescription>
+                        Something went wrong while retrieving the bookings list.
+                    </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                    <Button className="mt-5" variant="outline" onClick={() => refetch()}>
+                        Try again
+                    </Button>
+                    </EmptyContent>
+                </Empty>
+            </div>
+        );
     }
 
     return (
