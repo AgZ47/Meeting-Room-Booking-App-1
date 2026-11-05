@@ -703,93 +703,127 @@ export const Bookings = () => {
                 }}
               >
                 {/* Room */}
-                <Field className="my-3">
-                  {/* Start time */}
-                  <FieldLabel>Start time</FieldLabel>
+                {/* Start time */}
 
-                  <addBookingForm.Field name="start_time">
-                    {(field) => (
-                      <div>
-                        <Input
-                          type="time"
-                          value={field.state.value}
-                          onChange={(event) =>{
-                              field.handleChange(event.target.value)
-                              addBookingForm.setFieldValue("end_time", format(addHours(new Date(2014, 1, 1, Number(addBookingForm.getFieldValue("start_time").split(":")[0]), Number(addBookingForm.getFieldValue("start_time").split(":")[1])), 1),"HH:mm"))
-                            }
-                          }
-                          required
-                        />
-                        {!field.state.meta.isValid && field.state.meta.isTouched && (
-                          <div className="text-red-400 font-bold">
-                              {field.state.meta.errors.map((error,index) => (
-                                  <p key={index}>
-                                      {typeof error === "string" ? error : error?.message}
-                                  </p>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </addBookingForm.Field>
-
-                {/* End time */}
-                  <FieldLabel>End time</FieldLabel>
-
-                  <addBookingForm.Field name="end_time">
-                    {(field) => (
-                      <div>
-                        <Input
-                          type="time"
-                          value={field.state.value}
-                          onChange={(event) =>
+                <addBookingForm.Field name="start_time">
+                  {(field) => (
+                    <Field 
+                      className="my-3"
+                      data-invalid={!field.state.meta.isValid}
+                    >
+                      <FieldLabel className="flex flex-row gap-0">
+                        Start time
+                        <p className="text-red-400">
+                          *
+                        </p>
+                      </FieldLabel>
+                      <Input
+                        type="time"
+                        value={field.state.value}
+                        onChange={(event) =>{
                             field.handleChange(event.target.value)
+                            addBookingForm.setFieldValue("end_time", format(addHours(new Date(2014, 1, 1, Number(addBookingForm.getFieldValue("start_time").split(":")[0]), Number(addBookingForm.getFieldValue("start_time").split(":")[1])), 1),"HH:mm"))
                           }
-                          required
-                        />
-                        {!field.state.meta.isValid && field.state.meta.isTouched && (
-                          <div className="text-red-400 font-bold">
-                              {field.state.meta.errors.map((error,index) => (
-                                  <p key={index}>
-                                      {typeof error === "string" ? error : error?.message}
-                                  </p>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </addBookingForm.Field>
+                        }
+                        required
+                        aria-invalid={!field.state.meta.isValid}
+                      />
+                      {!field.state.meta.isValid && field.state.meta.isTouched && (
+                        <div className="text-red-400 font-bold">
+                            {field.state.meta.errors.map((error,index) => (
+                                <p key={index}>
+                                    {typeof error === "string" ? error : error?.message}
+                                </p>
+                            ))}
+                        </div>
+                      )}
+                    </Field>
+                  )}
+                </addBookingForm.Field>
 
-                  {/* Date */}
-                  <FieldLabel>Meeting date</FieldLabel>
+              {/* End time */}
 
-                  <addBookingForm.Field name="booking_date">
-                    {(field) => (
-                      <div>
-                        <Input
-                          type="date"
-                          value={field.state.value}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
-                          required
-                        />
-                        {!field.state.meta.isValid && field.state.meta.isTouched && (
-                          <div className="text-red-400 font-bold">
-                              {field.state.meta.errors.map((error,index) => (
-                                  <p key={index}>
-                                      {typeof error === "string" ? error : error?.message}
-                                  </p>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </addBookingForm.Field>
+                <addBookingForm.Field name="end_time">
+                  {(field) => (
+                    <Field
+                      className="my-3"
+                      data-invalid={!field.state.meta.isValid}
+                    >
+                      <FieldLabel className="flex flex-row gap-0">
+                        End time
+                        <p className="text-red-400">
+                          *
+                        </p>
+                      </FieldLabel>
+                      <Input
+                        type="time"
+                        value={field.state.value}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        required
+                        aria-invalid={!field.state.meta.isValid}
+                      />
+                      {!field.state.meta.isValid && field.state.meta.isTouched && (
+                        <div className="text-red-400 font-bold">
+                            {field.state.meta.errors.map((error,index) => (
+                                <p key={index}>
+                                    {typeof error === "string" ? error : error?.message}
+                                </p>
+                            ))}
+                        </div>
+                      )}
+                    </Field>
+                  )}
+                </addBookingForm.Field>
 
-                  <FieldLabel>Meeting room</FieldLabel>
-                  <addBookingForm.Field name="room_id">
-                    {(field) => (
+                {/* Date */}
+
+                <addBookingForm.Field name="booking_date">
+                  {(field) => (
+                    <Field
+                      className="my-3"
+                      data-invalid={!field.state.meta.isValid}
+                    >
+                      <FieldLabel className="flex flex-row gap-0">
+                        Meeting date
+                        <p className="text-red-400">
+                          *
+                        </p>
+                      </FieldLabel>
+                      <Input
+                        type="date"
+                        value={field.state.value}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        required
+                        aria-invalid={!field.state.meta.isValid}
+                      />
+                      {!field.state.meta.isValid && field.state.meta.isTouched && (
+                        <div className="text-red-400 font-bold">
+                            {field.state.meta.errors.map((error,index) => (
+                                <p key={index}>
+                                    {typeof error === "string" ? error : error?.message}
+                                </p>
+                            ))}
+                        </div>
+                      )}
+                    </Field>
+                  )}
+                </addBookingForm.Field>
+
+                <addBookingForm.Field name="room_id">
+                  {(field) => (
+                    <Field
+                      className="my-3"
+                    >
+                      <FieldLabel className="flex flex-row gap-0">
+                        Meeting room
+                        <p className="text-red-400">
+                          *
+                        </p>
+                      </FieldLabel>
                       <Select
                         items={rooms
                           .filter((room) => room.is_active)
@@ -808,57 +842,66 @@ export const Bookings = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a room" />
-                        </SelectTrigger>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a room" />
+                      </SelectTrigger>
 
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Available rooms</SelectLabel>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Available rooms</SelectLabel>
 
-                            {rooms
-                              .filter((room) => room.is_active)
-                              .map((room) => (
-                                <SelectItem
-                                  key={room.id}
-                                  value={room.id.toString()}
-                                >
-                                  {room.name}
-                                </SelectItem>
-                              ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </addBookingForm.Field>
+                          {rooms
+                            .filter((room) => room.is_active)
+                            .map((room) => (
+                              <SelectItem
+                                key={room.id}
+                                value={room.id.toString()}
+                              >
+                                {room.name}
+                              </SelectItem>
+                            ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  )}
+                </addBookingForm.Field>
 
-                {/* Purpose */}
-                  <FieldLabel>Meeting purpose</FieldLabel>
+              {/* Purpose */}
 
-                  <addBookingForm.Field name="purpose">
-                    {(field) => (
-                      <div>
-                        <Textarea
-                          value={field.state.value}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
-                          placeholder="What is the purpose of the meeting?"
-                          required
-                        />
-                        {!field.state.meta.isValid && field.state.meta.isTouched && (
-                          <div className="text-red-400 font-bold">
-                              {field.state.meta.errors.map((error,index) => (
-                                  <p key={index}>
-                                      {typeof error === "string" ? error : error?.message}
-                                  </p>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </addBookingForm.Field>
-                </Field>
+                <addBookingForm.Field name="purpose">
+                  {(field) => (
+                    <Field 
+                      className="my-3"
+                      data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                    >
+                      <FieldLabel className="flex flex-row gap-0">
+                        Meeting purpose
+                        <p className="text-red-400">
+                          *
+                        </p>
+                      </FieldLabel>
+                      <Textarea
+                        value={field.state.value}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        placeholder="What is the purpose of the meeting?"
+                        required
+                        aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                      />
+                      {!field.state.meta.isValid && field.state.meta.isTouched && (
+                        <div className="text-red-400 font-bold">
+                            {field.state.meta.errors.map((error,index) => (
+                                <p key={index}>
+                                    {typeof error === "string" ? error : error?.message}
+                                </p>
+                            ))}
+                        </div>
+                      )}
+                    </Field>
+                  )}
+                </addBookingForm.Field>
               </form>
             </CardContent>
 

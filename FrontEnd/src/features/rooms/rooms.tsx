@@ -590,7 +590,7 @@ export const Rooms = () => {
                         <roomAddForm.Field name="name">
                             {(field) => (
                             <Field className="space-y-2 sm:col-span-2" 
-                                data-invalid={!field.state.meta.isValid}
+                                data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
                             >
                                     <FieldLabel htmlFor="add-name" className="flex flex-row gap-0">
                                         Room name
@@ -605,7 +605,7 @@ export const Rooms = () => {
                                         onChange={(e) => field.handleChange(e.target.value)}
                                         placeholder="e.g. Conference Room A"
                                         required
-                                        aria-invalid={!field.state.meta.isValid}
+                                        aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
                                     />
                                     {!field.state.meta.isValid && field.state.meta.isTouched && (
                                         <div className="text-red-400 font-bold">
@@ -624,7 +624,7 @@ export const Rooms = () => {
                         {(field) => (
                             <Field 
                                 className="space-y-2"
-                                data-invalid={!field.state.meta.isValid}
+                                data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
                             >                                
                                 <FieldLabel htmlFor="add-capacity" className="flex flex-row gap-0">
                                     Capacity
@@ -641,7 +641,7 @@ export const Rooms = () => {
                                     field.handleChange(Number(e.target.value))
                                     }
                                     required
-                                    aria-invalid={!field.state.meta.isValid}
+                                    aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
                                 />
                                 {!field.state.meta.isValid && field.state.meta.isTouched && (
                                     <div className="text-red-400 font-bold">
@@ -660,7 +660,7 @@ export const Rooms = () => {
                         {(field) => (
                         <Field 
                             className="space-y-2"
-                            data-invalid={!field.state.meta.isValid}
+                            data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
                         >
                             <FieldLabel htmlFor="add-floor" className="flex flex-row gap-0">
                                 Floor
@@ -677,7 +677,7 @@ export const Rooms = () => {
                                 field.handleChange(Number(e.target.value))
                                 }
                                 required
-                                aria-invalid={!field.state.meta.isValid}
+                                aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
                             />
                             {!field.state.meta.isValid && field.state.meta.isTouched && (
                                 <div className="text-red-400 font-bold">
@@ -694,7 +694,9 @@ export const Rooms = () => {
                 </div>
 
                 <Field className="space-y-3">
-                    <FieldLabel>Facilities</FieldLabel>
+                    <FieldLabel>
+                        Facilities
+                    </FieldLabel>
                     <FieldDescription className="mt-1 text-xs text-muted-foreground">
                         Select all facilities available in this room.
                     </FieldDescription>
@@ -801,16 +803,61 @@ export const Rooms = () => {
                             roomUpdateForm.handleSubmit();
                         }}
                         >
-                        <Field className="space-y-2">
-                            <FieldLabel htmlFor="update-name">Room name</FieldLabel>
-                            <roomUpdateForm.Field name="name">
+                        <roomUpdateForm.Field name="name">
                             {(field) => (
-                                <div>
+                            <Field 
+                                className="space-y-2"
+                                data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                            >
+                                <FieldLabel htmlFor="update-name" className="flex flex-row gap-0">
+                                    Room name
+                                    <p className="text-red-400">
+                                        *
+                                    </p>
+                                </FieldLabel>
+                                <Input
+                                    id="update-name"
+                                    value={field.state.value}
+                                    onChange={(e) => field.handleChange(e.target.value)}
+                                    required
+                                    aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                                />
+                                {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                <div className="text-red-400 font-bold">
+                                        {field.state.meta.errors.map((error,index) => (
+                                            <p key={index}>
+                                                {typeof error === "string" ? error : error?.message}
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
+                            </Field>
+                            )}
+                            </roomUpdateForm.Field>
+
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <roomUpdateForm.Field name="capacity">
+                                {(field) => (
+                                <Field 
+                                    className="space-y-2"
+                                    data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                                >
+                                    <FieldLabel htmlFor="update-capacity" className="flex flex-row gap-0">
+                                        Capacity
+                                        <p className="text-red-400">
+                                            *
+                                        </p>
+                                    </FieldLabel>
                                     <Input
-                                        id="update-name"
+                                        id="update-capacity"
+                                        type="number"
+                                        min={1}
                                         value={field.state.value}
-                                        onChange={(e) => field.handleChange(e.target.value)}
+                                        onChange={(e) =>
+                                        field.handleChange(Number(e.target.value))
+                                        }
                                         required
+                                        aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
                                     />
                                     {!field.state.meta.isValid && field.state.meta.isTouched && (
                                     <div className="text-red-400 font-bold">
@@ -821,73 +868,54 @@ export const Rooms = () => {
                                             ))}
                                         </div>
                                     )}
-                                </div>
-                            )}
-                            </roomUpdateForm.Field>
-                        </Field>
-
-                        <div className="grid gap-5 sm:grid-cols-2">
-                            <Field className="space-y-2">
-                            <FieldLabel htmlFor="update-capacity">Capacity</FieldLabel>
-                            <roomUpdateForm.Field name="capacity">
-                                {(field) => (
-                                    <div>
-                                        <Input
-                                            id="update-capacity"
-                                            type="number"
-                                            min={1}
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                            field.handleChange(Number(e.target.value))
-                                            }
-                                            required
-                                        />
-                                        {!field.state.meta.isValid && field.state.meta.isTouched && (
-                                        <div className="text-red-400 font-bold">
-                                                {field.state.meta.errors.map((error,index) => (
-                                                    <p key={index}>
-                                                        {typeof error === "string" ? error : error?.message}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
+                                </Field>
                                 )}
                             </roomUpdateForm.Field>
-                            </Field>
 
-                            <Field className="space-y-2">
-                            <FieldLabel htmlFor="update-floor">Floor</FieldLabel>
                             <roomUpdateForm.Field name="floor">
                                 {(field) => (
-                                    <div>
-                                        <Input
-                                            id="update-floor"
-                                            type="number"
-                                            min={0}
-                                            value={field.state.value}
-                                            onChange={(e) =>
-                                            field.handleChange(Number(e.target.value))
-                                            }
-                                            required
-                                        />
-                                        {!field.state.meta.isValid && field.state.meta.isTouched && (
-                                        <div className="text-red-400 font-bold">
-                                                {field.state.meta.errors.map((error,index) => (
-                                                    <p key={index}>
-                                                        {typeof error === "string" ? error : error?.message}
-                                                    </p>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
+                                <Field 
+                                    className="space-y-2"
+                                    data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                                >
+                                <FieldLabel htmlFor="update-floor" className="flex flex-row gap-0">
+                                    Floor
+                                    <p className="text-red-400">
+                                        *
+                                    </p>
+                                </FieldLabel>                        
+                                    <Input
+                                        id="update-floor"
+                                        type="number"
+                                        min={0}
+                                        value={field.state.value}
+                                        onChange={(e) =>
+                                        field.handleChange(Number(e.target.value))
+                                        }
+                                        required
+                                        aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                                    />
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                    <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </Field>
                                 )}
                             </roomUpdateForm.Field>
-                            </Field>
                         </div>
 
                         <Field className="space-y-3">
-                            <FieldLabel>Facilities</FieldLabel>
+                            <FieldLabel className="flex flex-row gap-0">
+                                Facilities
+                                <p className="text-red-400">
+                                    *
+                                </p>
+                            </FieldLabel>
                             <FieldDescription className="mt-1 text-xs text-muted-foreground">
                             Update the facilities available in this room.
                             </FieldDescription>

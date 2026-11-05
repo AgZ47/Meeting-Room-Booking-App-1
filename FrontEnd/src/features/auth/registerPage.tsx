@@ -11,6 +11,7 @@ import { Label } from "../../common/ui/label"
 import { useState } from "react"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty"
 import { LoaderCircle } from "lucide-react"
+import { Field, FieldLabel } from "../../common/ui/field"
 
 const inputSchema = z.object({
     name: z.string().min(1).max(100),
@@ -106,11 +107,18 @@ export const RegisterPage = () => {
                 }}>
                 <div className="flex flex-col gap-6">
                     <div className="grid gap-2">
-                        <label htmlFor="email">Name</label>
                         <form.Field name="name">
                             {(field) => (
-                                <div>
-                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setNameError("")}} id="name" type="string" placeholder="Full name" />
+                                <Field 
+                                    data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                                >
+                                    <FieldLabel htmlFor="email" className="flex flex-row gap-0">
+                                        Name
+                                        <p className="text-red-400">
+                                            *
+                                        </p>
+                                    </FieldLabel>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setNameError("")}} id="name" type="string" placeholder="Full name" aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}/>
                                     {!field.state.meta.isValid && field.state.meta.isTouched && (
                                         <div className="text-red-400 font-bold">
                                             {field.state.meta.errors.map((error,index) => (
@@ -120,7 +128,7 @@ export const RegisterPage = () => {
                                             ))}
                                         </div>
                                     )}
-                                </div>
+                                </Field>
                             )}
                         </form.Field>
                         {nameError && <div className="p-2 my-1 bg-red-100 outline-2 outline-red-400 rounded-lg flex flex-row gap-2">
@@ -129,11 +137,18 @@ export const RegisterPage = () => {
                         </div>}
                     </div>
                     <div className="grid gap-2">
-                        <label htmlFor="email">Email</label>
                         <form.Field name="email">
                             {(field) => (
-                                <div>
-                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setEmailError("")}} id="email" type="email" placeholder="user@example.com" />
+                                <Field
+                                    data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                                >
+                                    <FieldLabel htmlFor="email" className="flex flex-row gap-0">
+                                        Email
+                                        <p className="text-red-400">
+                                            *
+                                        </p>
+                                    </FieldLabel>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setEmailError("")}} id="email" type="email" placeholder="user@example.com" aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}/>
                                     {!field.state.meta.isValid && field.state.meta.isTouched && (
                                         <div className="text-red-400 font-bold">
                                             {field.state.meta.errors.map((error,index) => (
@@ -143,7 +158,7 @@ export const RegisterPage = () => {
                                             ))}
                                         </div>
                                     )}
-                                </div>
+                                </Field>
                             )}
                         </form.Field>
                         {emailError && <div className="p-2 my-1 bg-red-100 outline-2 outline-red-400 rounded-lg flex flex-row gap-2">
@@ -152,16 +167,23 @@ export const RegisterPage = () => {
                         </div>}
                     </div>
                     <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <label htmlFor="password">Password</label>
-                            <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-sky-600">
-                            Forgot your password?
-                            </a>
-                        </div>
                         <form.Field name="password_hash">
                             {(field) => (
-                                <div>
-                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setPasswordError("")}} id="password" type="password" placeholder="password" />
+                                <Field
+                                    data-invalid={!field.state.meta.isValid && field.state.meta.isTouched}
+                                >
+                                    <div className="flex items-center">
+                                        <FieldLabel htmlFor="password" className="flex flex-row gap-0">
+                                            Password
+                                            <p className="text-red-400">
+                                                *
+                                            </p>
+                                        </FieldLabel>
+                                        <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline text-sky-600">
+                                            Forgot your password?
+                                        </a>
+                                    </div>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setPasswordError("")}} id="password" type="password" placeholder="password" aria-invalid={!field.state.meta.isValid && field.state.meta.isTouched}/>
                                     {!field.state.meta.isValid && field.state.meta.isTouched && (
                                         <div className="text-red-400 font-bold">
                                             {field.state.meta.errors.map((error,index) => (
@@ -171,7 +193,7 @@ export const RegisterPage = () => {
                                             ))}
                                         </div>
                                     )}
-                                </div>
+                                </Field>
                             )}
                         </form.Field>
                         {passwordError && <div className="p-2 my-1 bg-red-100 outline-2 outline-red-400 rounded-lg flex flex-row gap-2">
