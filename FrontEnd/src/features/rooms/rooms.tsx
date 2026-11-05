@@ -17,6 +17,7 @@ import { CircleCheck, LoaderCircle, LogInIcon, Plus, ShieldCheck, ShieldX, Squar
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../../common/ui/dialog";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty";
+import { toast, Toaster } from "../../common/ui/toast";
 
 const features = tableFeatures({
     columnVisibilityFeature,
@@ -84,6 +85,34 @@ export const Rooms = () => {
     const rooms = data?.roomData ?? [];
     const sortedrooms = [...rooms].sort((a, b) => a.id - b.id)
 
+    function showSuccessToast(description: string) {
+        toast.add({
+            type: "success",
+            title: "Message",
+            description: description,
+            // actionProps: {
+            //     children: "Undo",
+            //         onClick() {
+            //             toast.close(id)
+            //     },
+            // },
+        })
+    }
+
+    function showFailureToast(description: string) {
+        toast.add({
+            type: "error",
+            title: "Message",
+            description: description,
+            // actionProps: {
+            //     children: "Undo",
+            //         onClick() {
+            //             toast.close(id)
+            //     },
+            // },
+        })
+    }
+
     const roomAddForm = useForm({
         defaultValues: {
             name: '',
@@ -101,8 +130,10 @@ export const Rooms = () => {
                 await addRoom(parsedValue)
                 refetch();
                 roomAddForm.reset()
+                showSuccessToast("Added room Successfully")
             }catch(err){
                 console.log("Failed to add room: ", err);
+                showFailureToast("Failed to Add Room")
             }
         }
     })
@@ -119,9 +150,15 @@ export const Rooms = () => {
             onChange: updateRoomFormSchema
         },
         onSubmit: async ({value}) => {
-            await updateRoom(updateRoomSchema.parse(value))
-            refetch();
-            roomUpdateForm.reset()
+            try{
+                await updateRoom(updateRoomSchema.parse(value))
+                refetch();
+                roomUpdateForm.reset()
+                showSuccessToast("Room Updated Successfully")
+            }catch(err){
+                console.log(err)
+                showFailureToast("Failed to Update Room")
+            }
         }
     })
 
@@ -130,9 +167,14 @@ export const Rooms = () => {
             name: "",   
         },
         onSubmit: async ({ value }) => {
-            await addFacility(value);
-            console.log(value);
-            facilityAddForm.reset();
+            try{
+                await addFacility(value);
+                facilityAddForm.reset();
+                showSuccessToast("Facility Added Succesfully");
+            }catch(err){
+                console.log(err)
+                showFailureToast("Failed to Add Facility")
+            }
         },
     });
 
@@ -388,6 +430,7 @@ export const Rooms = () => {
     return (
     <Dialog>
     <div className="mx-auto w-full space-y-6 p-4 sm:p-6">
+        <Toaster/>
         {/* Page heading */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
@@ -530,7 +573,7 @@ export const Rooms = () => {
             <DialogHeader className="border-b px-5 py-5 sm:px-6">
                 <DialogTitle className="text-xl">Add a room</DialogTitle>
                 <DialogDescription>
-                Enter the room details and choose its facilities.
+                    Enter the room details and choose its facilities.
                 </DialogDescription>
             </DialogHeader>
 
@@ -544,11 +587,17 @@ export const Rooms = () => {
                 }}
                 >
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <Field className="space-y-2 sm:col-span-2">
                         <roomAddForm.Field name="name">
                             {(field) => (
-                                <div>
-                                    <FieldLabel htmlFor="add-name">Room name</FieldLabel>
+                            <Field className="space-y-2 sm:col-span-2" 
+                                data-invalid={!field.state.meta.isValid}
+                            >
+                                    <FieldLabel htmlFor="add-name" className="flex flex-row gap-0">
+                                        Room name
+                                        <p className="text-red-400">
+                                            *
+                                        </p>
+                                    </FieldLabel>
                                     <Input
                                         id={field.name}
                                         name={field.name}
@@ -556,8 +605,9 @@ export const Rooms = () => {
                                         onChange={(e) => field.handleChange(e.target.value)}
                                         placeholder="e.g. Conference Room A"
                                         required
+                                        aria-invalid={!field.state.meta.isValid}
                                     />
-                                    {!field.state.meta.isValid && (
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
                                         <div className="text-red-400 font-bold">
                                             {field.state.meta.errors.map((error,index) => (
                                                 <p key={index}>
@@ -566,46 +616,81 @@ export const Rooms = () => {
                                             ))}
                                         </div>
                                     )}
-                                </div>
+                            </Field>
                             )}
                         </roomAddForm.Field>
-                    </Field>
 
-                    <Field className="space-y-2">
-                    <FieldLabel htmlFor="add-capacity">Capacity</FieldLabel>
                     <roomAddForm.Field name="capacity">
                         {(field) => (
-                        <Input
-                            id="add-capacity"
-                            type="number"
-                            min={1}
-                            value={field.state.value}
-                            onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                            }
-                            required
-                        />
+                            <Field 
+                                className="space-y-2"
+                                data-invalid={!field.state.meta.isValid}
+                            >                                
+                                <FieldLabel htmlFor="add-capacity" className="flex flex-row gap-0">
+                                    Capacity
+                                    <p className="text-red-400">
+                                        *
+                                    </p>
+                                </FieldLabel>
+                                <Input
+                                    id="add-capacity"
+                                    type="number"
+                                    min={1}
+                                    value={field.state.value}
+                                    onChange={(e) =>
+                                    field.handleChange(Number(e.target.value))
+                                    }
+                                    required
+                                    aria-invalid={!field.state.meta.isValid}
+                                />
+                                {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                    <div className="text-red-400 font-bold">
+                                        {field.state.meta.errors.map((error,index) => (
+                                            <p key={index}>
+                                                {typeof error === "string" ? error : error?.message}
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
+                            </Field>
                         )}
                     </roomAddForm.Field>
-                    </Field>
 
-                    <Field className="space-y-2">
-                    <FieldLabel htmlFor="add-floor">Floor</FieldLabel>
                     <roomAddForm.Field name="floor">
                         {(field) => (
-                        <Input
-                            id="add-floor"
-                            type="number"
-                            min={0}
-                            value={field.state.value}
-                            onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                            }
-                            required
-                        />
+                        <Field 
+                            className="space-y-2"
+                            data-invalid={!field.state.meta.isValid}
+                        >
+                            <FieldLabel htmlFor="add-floor" className="flex flex-row gap-0">
+                                Floor
+                                <p className="text-red-400">
+                                    *
+                                </p>
+                            </FieldLabel>
+                            <Input
+                                id="add-floor"
+                                type="number"
+                                min={0}
+                                value={field.state.value}
+                                onChange={(e) =>
+                                field.handleChange(Number(e.target.value))
+                                }
+                                required
+                                aria-invalid={!field.state.meta.isValid}
+                            />
+                            {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                <div className="text-red-400 font-bold">
+                                    {field.state.meta.errors.map((error,index) => (
+                                        <p key={index}>
+                                            {typeof error === "string" ? error : error?.message}
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
+                        </Field>
                         )}
                     </roomAddForm.Field>
-                    </Field>
                 </div>
 
                 <Field className="space-y-3">
@@ -720,12 +805,23 @@ export const Rooms = () => {
                             <FieldLabel htmlFor="update-name">Room name</FieldLabel>
                             <roomUpdateForm.Field name="name">
                             {(field) => (
-                                <Input
-                                id="update-name"
-                                value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                required
-                                />
+                                <div>
+                                    <Input
+                                        id="update-name"
+                                        value={field.state.value}
+                                        onChange={(e) => field.handleChange(e.target.value)}
+                                        required
+                                    />
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                    <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                             </roomUpdateForm.Field>
                         </Field>
@@ -735,16 +831,27 @@ export const Rooms = () => {
                             <FieldLabel htmlFor="update-capacity">Capacity</FieldLabel>
                             <roomUpdateForm.Field name="capacity">
                                 {(field) => (
-                                <Input
-                                    id="update-capacity"
-                                    type="number"
-                                    min={1}
-                                    value={field.state.value}
-                                    onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                    }
-                                    required
-                                />
+                                    <div>
+                                        <Input
+                                            id="update-capacity"
+                                            type="number"
+                                            min={1}
+                                            value={field.state.value}
+                                            onChange={(e) =>
+                                            field.handleChange(Number(e.target.value))
+                                            }
+                                            required
+                                        />
+                                        {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                        <div className="text-red-400 font-bold">
+                                                {field.state.meta.errors.map((error,index) => (
+                                                    <p key={index}>
+                                                        {typeof error === "string" ? error : error?.message}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </roomUpdateForm.Field>
                             </Field>
@@ -753,16 +860,27 @@ export const Rooms = () => {
                             <FieldLabel htmlFor="update-floor">Floor</FieldLabel>
                             <roomUpdateForm.Field name="floor">
                                 {(field) => (
-                                <Input
-                                    id="update-floor"
-                                    type="number"
-                                    min={0}
-                                    value={field.state.value}
-                                    onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                    }
-                                    required
-                                />
+                                    <div>
+                                        <Input
+                                            id="update-floor"
+                                            type="number"
+                                            min={0}
+                                            value={field.state.value}
+                                            onChange={(e) =>
+                                            field.handleChange(Number(e.target.value))
+                                            }
+                                            required
+                                        />
+                                        {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                        <div className="text-red-400 font-bold">
+                                                {field.state.meta.errors.map((error,index) => (
+                                                    <p key={index}>
+                                                        {typeof error === "string" ? error : error?.message}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </roomUpdateForm.Field>
                             </Field>
@@ -892,7 +1010,7 @@ export const Rooms = () => {
                                     className="px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                                     >
                                     {facility.name}
-                                    <Button onClick={() => {deleteFacility(facility.id); refetchFacilities()}} variant="ghost" size="sm" className="float-right text-red-500 hover:bg-red-50 hover:text-red-700">
+                                    <Button onClick={() => {deleteFacility(facility.id); refetchFacilities(); showSuccessToast("Facility Deleted Successfully")}} variant="ghost" size="sm" className="float-right text-red-500 hover:bg-red-50 hover:text-red-700">
                                         <Trash/>
                                     </Button>
                                     </li>

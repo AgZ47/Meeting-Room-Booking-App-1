@@ -4,9 +4,13 @@ import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import {
   addDays,
+  addHours,
   addWeeks,
   format,
+  formatISO,
   isSameDay,
+  setHours,
+  setMinutes,
   startOfWeek,
 } from "date-fns";
 
@@ -41,9 +45,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../common/ui/select";
-import { ArrowBigLeft, ArrowBigRight, LoaderCircle, LogInIcon, X } from "lucide-react";
+import { ArrowBigLeft, ArrowBigRight, LoaderCircle, LogInIcon, Plus, X } from "lucide-react";
 import { ButtonGroup } from "../../common/ui/button-group";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "../../common/ui/empty";
+import { toast } from "../../common/ui/toast";
 
 // --------------------------------------------------
 // Calendar configuration
@@ -51,7 +56,7 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 
 const START_HOUR = 8;
 const END_HOUR = 20;
-const HOUR_HEIGHT = 64;
+const HOUR_HEIGHT = 120;
 
 const meetingBookingSchema = z
   .object({
@@ -181,6 +186,20 @@ const getDayBookingsLayout = (
 // --------------------------------------------------
 
 export const Bookings = () => {
+
+  function showToast() {
+    const id = toast.add({
+      title: "Event created",
+      description: "Sunday, December 3 at 9:00 AM",
+      actionProps: {
+        children: "Undo",
+        onClick() {
+          toast.close(id)
+        },
+      },
+    })
+  }
+
   const token = useSelector(
     (state: RootState) => state.auth.usertoken
   );
@@ -236,15 +255,17 @@ export const Bookings = () => {
       end_time: "",
       purpose: "",
     },
-
+    validators: {
+      onChange: meetingBookingSchema 
+    },
     onSubmit: async ({ value }) => {
       const parsedValue = meetingBookingSchema.parse(value);
-
       await postData(parsedValue).unwrap();
 
       await refetch();
       setIsAddBookingOpen(false);
       addBookingForm.reset();
+      showToast();
     },
   });
 
@@ -378,30 +399,21 @@ export const Bookings = () => {
             <Button
               onClick={() => {
                 refetchRooms();
+                addBookingForm.setFieldValue("booking_date", new Date().toISOString().split("T")[0])
+                addBookingForm.setFieldValue("start_time", format(new Date(), "HH:mm"))
+                addBookingForm.setFieldValue("end_time", format(addHours(new Date(), 1), "HH:mm"))
                 setIsAddBookingOpen(true);
               }}
             >
-              + Book a room
+              <Plus/>
+              Book a room
             </Button>
           </div>
         </div>
 
         <div>
-          {/* Calendar legend */}
-          <div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-sm border border-blue-300 bg-blue-300 dark:border-blue-800 dark:bg-blue-950" />
-              Confirmed booking
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-sm border bg-muted" />
-              Cancelled booking
-            </div>
-          </div>
-
           {/* Scrollable calendar */}
-          <div className="max-h-[calc(100vh-260px)] overflow-auto rounded-lg border">
+          <div className="max-h-[calc(100vh-260px)] overflow-auto rounded-lg border my-3">
             <div className="min-w-[1050px]">
 
               {/* Day headers */}
@@ -440,7 +452,9 @@ export const Bookings = () => {
               </div>
 
               {/* Calendar grid */}
-              <div className="grid grid-cols-[76px_repeat(7,minmax(0,1fr))]">
+              <div 
+                className="grid grid-cols-[76px_repeat(7,minmax(0,1fr))]"
+              >
 
                 {/* Time labels */}
                 <div className="border-r">
@@ -479,6 +493,21 @@ export const Bookings = () => {
                             <div
                             key={day.toISOString()}
                             className="relative border-r"
+                            onClick={(e) => {
+                              //selected date and time fetching logic
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              const y = e.clientY - rect.top;
+                              const val = (y/(HOUR_HEIGHT/60))/60
+                              const date = setMinutes(setHours(new Date(day), 8),0)
+                              const result = format(addHours(date, val), "yyyy-MM-dd'T'HH:mm");
+
+                              //opening dialog and setting default values
+                              refetchRooms();
+                              addBookingForm.setFieldValue("booking_date", result.split("T")[0])
+                              addBookingForm.setFieldValue("start_time", format(result, "HH:mm"))
+                              addBookingForm.setFieldValue("end_time", format(addHours(result, 1), "HH:mm"))
+                              setIsAddBookingOpen(true);
+                            }}
                             style={{
                                 height:
                                 timeSlots.length * HOUR_HEIGHT,
@@ -529,7 +558,7 @@ export const Bookings = () => {
                                         key={booking.bookingId}
                                         className={`absolute z-10 overflow-hidden rounded-md border p-1.5 text-xs shadow-sm ${
                                             isCancelled
-                                            ? "border-muted-foreground/20 bg-muted text-muted-foreground"
+                                            ? "border-red-400 bg-red-100 text-red-700"
                                             : isCompleted
                                             ? "border-green-300 bg-green-100 text-green-950 dark:border-green-800 dark:bg-green-950 dark:text-green-100"
                                             : "border-[#135893] bg-blue-300 text-blue-950 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
@@ -608,15 +637,33 @@ export const Bookings = () => {
             </div>
           </div>
         </div>
+        <div className="flex flex-row justify-between">
+          <div className="justify-between border-t py-3 text-xs text-muted-foreground">
+            <div>
+              Showing {sortedBookings.length} bookings
+            </div>
+            <div>
+              {format(currentWeek, "MMM d")} -{" "}
+              {format(addDays(currentWeek, 6), "MMM d")}
+            </div>
+          </div>
+          {/* Calendar legend */}
+          <div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className="size-3 rounded-sm border border-blue-300 bg-blue-300 dark:border-blue-800 dark:bg-blue-950" />
+              Confirmed booking
+            </div>
 
-        <div className="justify-between border-t py-3 text-xs text-muted-foreground">
-          <span>
-            Showing {sortedBookings.length} bookings
-          </span>
-          <span>
-            {format(currentWeek, "MMM d")} –{" "}
-            {format(addDays(currentWeek, 6), "MMM d")}
-          </span>
+            <div className="flex items-center gap-2">
+              <span className="size-3 rounded-sm border bg-muted" />
+              Cancelled booking
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="size-3 rounded-sm border border-red-300 bg-red-100 dark:border-red-800 dark:bg-red-950" />
+              Completed booking
+            </div>
+          </div>
         </div>
       </div>
 
@@ -630,7 +677,7 @@ export const Bookings = () => {
                   Book a meeting room
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Select a room, date, and meeting time.
+                  Select a meeting time, date and room.
                 </p>
               </div>
 
@@ -641,7 +688,7 @@ export const Bookings = () => {
                   addBookingForm.reset();
                 }}
               >
-                X
+                <X/>
               </Button>
             </CardHeader>
 
@@ -656,9 +703,91 @@ export const Bookings = () => {
                 }}
               >
                 {/* Room */}
-                <Field>
-                  <FieldLabel>Meeting room</FieldLabel>
+                <Field className="my-3">
+                  {/* Start time */}
+                  <FieldLabel>Start time</FieldLabel>
 
+                  <addBookingForm.Field name="start_time">
+                    {(field) => (
+                      <div>
+                        <Input
+                          type="time"
+                          value={field.state.value}
+                          onChange={(event) =>{
+                              field.handleChange(event.target.value)
+                              addBookingForm.setFieldValue("end_time", format(addHours(new Date(2014, 1, 1, Number(addBookingForm.getFieldValue("start_time").split(":")[0]), Number(addBookingForm.getFieldValue("start_time").split(":")[1])), 1),"HH:mm"))
+                            }
+                          }
+                          required
+                        />
+                        {!field.state.meta.isValid && field.state.meta.isTouched && (
+                          <div className="text-red-400 font-bold">
+                              {field.state.meta.errors.map((error,index) => (
+                                  <p key={index}>
+                                      {typeof error === "string" ? error : error?.message}
+                                  </p>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </addBookingForm.Field>
+
+                {/* End time */}
+                  <FieldLabel>End time</FieldLabel>
+
+                  <addBookingForm.Field name="end_time">
+                    {(field) => (
+                      <div>
+                        <Input
+                          type="time"
+                          value={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          required
+                        />
+                        {!field.state.meta.isValid && field.state.meta.isTouched && (
+                          <div className="text-red-400 font-bold">
+                              {field.state.meta.errors.map((error,index) => (
+                                  <p key={index}>
+                                      {typeof error === "string" ? error : error?.message}
+                                  </p>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </addBookingForm.Field>
+
+                  {/* Date */}
+                  <FieldLabel>Meeting date</FieldLabel>
+
+                  <addBookingForm.Field name="booking_date">
+                    {(field) => (
+                      <div>
+                        <Input
+                          type="date"
+                          value={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          required
+                        />
+                        {!field.state.meta.isValid && field.state.meta.isTouched && (
+                          <div className="text-red-400 font-bold">
+                              {field.state.meta.errors.map((error,index) => (
+                                  <p key={index}>
+                                      {typeof error === "string" ? error : error?.message}
+                                  </p>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </addBookingForm.Field>
+
+                  <FieldLabel>Meeting room</FieldLabel>
                   <addBookingForm.Field name="room_id">
                     {(field) => (
                       <Select
@@ -702,76 +831,31 @@ export const Bookings = () => {
                       </Select>
                     )}
                   </addBookingForm.Field>
-                </Field>
-
-                {/* Date */}
-                <Field>
-                  <FieldLabel>Meeting date</FieldLabel>
-
-                  <addBookingForm.Field name="booking_date">
-                    {(field) => (
-                      <Input
-                        type="date"
-                        value={field.state.value}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
-                        required
-                      />
-                    )}
-                  </addBookingForm.Field>
-                </Field>
-
-                {/* Start time */}
-                <Field>
-                  <FieldLabel>Start time</FieldLabel>
-
-                  <addBookingForm.Field name="start_time">
-                    {(field) => (
-                      <Input
-                        type="time"
-                        value={field.state.value}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
-                        required
-                      />
-                    )}
-                  </addBookingForm.Field>
-                </Field>
-
-                {/* End time */}
-                <Field>
-                  <FieldLabel>End time</FieldLabel>
-
-                  <addBookingForm.Field name="end_time">
-                    {(field) => (
-                      <Input
-                        type="time"
-                        value={field.state.value}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
-                        required
-                      />
-                    )}
-                  </addBookingForm.Field>
-                </Field>
 
                 {/* Purpose */}
-                <Field>
                   <FieldLabel>Meeting purpose</FieldLabel>
 
                   <addBookingForm.Field name="purpose">
                     {(field) => (
-                      <Textarea
-                        value={field.state.value}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
-                        placeholder="What is the purpose of the meeting?"
-                        required
-                      />
+                      <div>
+                        <Textarea
+                          value={field.state.value}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                          placeholder="What is the purpose of the meeting?"
+                          required
+                        />
+                        {!field.state.meta.isValid && field.state.meta.isTouched && (
+                          <div className="text-red-400 font-bold">
+                              {field.state.meta.errors.map((error,index) => (
+                                  <p key={index}>
+                                      {typeof error === "string" ? error : error?.message}
+                                  </p>
+                              ))}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </addBookingForm.Field>
                 </Field>

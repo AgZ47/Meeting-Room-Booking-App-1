@@ -32,6 +32,9 @@ export const RegisterPage = () => {
             email: '',
             password_hash: ''
         },
+        validators:{
+            onChange: inputSchema
+        },
         onSubmit: async ({value}) => {
             setNameError("")
             setEmailError("")
@@ -106,7 +109,18 @@ export const RegisterPage = () => {
                         <label htmlFor="email">Name</label>
                         <form.Field name="name">
                             {(field) => (
-                            <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setNameError("")}} id="name" type="string" placeholder="Full name" />
+                                <div>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setNameError("")}} id="name" type="string" placeholder="Full name" />
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                        <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </form.Field>
                         {nameError && <div className="p-2 my-1 bg-red-100 outline-2 outline-red-400 rounded-lg flex flex-row gap-2">
@@ -118,7 +132,18 @@ export const RegisterPage = () => {
                         <label htmlFor="email">Email</label>
                         <form.Field name="email">
                             {(field) => (
-                            <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setEmailError("")}} id="email" type="email" placeholder="user@example.com" />
+                                <div>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setEmailError("")}} id="email" type="email" placeholder="user@example.com" />
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                        <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </form.Field>
                         {emailError && <div className="p-2 my-1 bg-red-100 outline-2 outline-red-400 rounded-lg flex flex-row gap-2">
@@ -135,7 +160,18 @@ export const RegisterPage = () => {
                         </div>
                         <form.Field name="password_hash">
                             {(field) => (
-                            <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setPasswordError("")}} id="password" type="password" placeholder="password" />
+                                <div>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setPasswordError("")}} id="password" type="password" placeholder="password" />
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                        <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </form.Field>
                         {passwordError && <div className="p-2 my-1 bg-red-100 outline-2 outline-red-400 rounded-lg flex flex-row gap-2">

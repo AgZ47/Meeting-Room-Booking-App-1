@@ -29,6 +29,9 @@ export const LoginPage = () => {
             email: '',
             password_hash: '',
         },
+        validators:{
+            onChange: inputSchema 
+        },
         onSubmit: async ({ value }) => {
             reset()
             setEmailError("")
@@ -107,7 +110,18 @@ export const LoginPage = () => {
                         <label htmlFor="email">Email</label>
                         <form.Field name="email">
                             {(field) => (
-                            <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setEmailError("")}} id="email" type="email" placeholder="user@example.com" />
+                                <div>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setEmailError("")}} id="email" type="email" placeholder="user@example.com" />
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                        <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </form.Field>
                         {emailError && <div className='bg-red-200 rounded-lg outline-red-500 outline-2 p-2 my-1 flex flex-row gap-2'>
@@ -124,7 +138,18 @@ export const LoginPage = () => {
                         </div>
                         <form.Field name="password_hash">
                             {(field) => (
-                            <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setPasswordError("")}} id="password" type="password" placeholder="password" />
+                                <div>
+                                    <Input value={field.state.value} onChange={(e) => {field.handleChange(e.target.value); setPasswordError("")}} id="password" type="password" placeholder="password" />
+                                    {!field.state.meta.isValid && field.state.meta.isTouched && (
+                                        <div className="text-red-400 font-bold">
+                                            {field.state.meta.errors.map((error,index) => (
+                                                <p key={index}>
+                                                    {typeof error === "string" ? error : error?.message}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </form.Field>
                         {passwordError && <div className='bg-red-200 rounded-lg outline-red-500 outline-2 p-2 my-1 flex flex-row gap-2'>
