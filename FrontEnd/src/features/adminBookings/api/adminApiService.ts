@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../../../common/store";
-import type { roomsType } from "../../rooms/api/roomsApiSlice";
+import type { roomsType } from "../../rooms/api/roomsApiService";
 
 type Booking = {
   id: number;

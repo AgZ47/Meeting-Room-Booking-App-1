@@ -26,10 +26,13 @@ export const roomsApiSlice = createApi({
         getAllRooms: builder.query<{roomData: roomsType[], message: string},void>({
             query: () => '/rooms'
         }),
+        getRoomsByAvailability: builder.query<{roomData: {room_id: number, room_name: string, room_is_active: boolean, room_availability: string}[], message: string}, {date: string, start_time: string, end_time: string}>({
+            query: (values) => `/rooms/availability?date=${values.date}&start_time=${values.start_time}&end_time=${values.end_time}`
+        }),
         getFilteredRooms: builder.query<{roomData: roomsType[], message: string},boolean>({
             query: (values) => `/rooms/${values}` 
         })
     })
 })
 
-export const {useGetAllRoomsQuery, useGetFilteredRoomsQuery} = roomsApiSlice
+export const {useGetAllRoomsQuery, useGetFilteredRoomsQuery, useLazyGetRoomsByAvailabilityQuery} = roomsApiSlice

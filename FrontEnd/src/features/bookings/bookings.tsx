@@ -7,7 +7,6 @@ import {
   addHours,
   addWeeks,
   format,
-  formatISO,
   isSameDay,
   setHours,
   setMinutes,
@@ -23,7 +22,7 @@ import {
   type bookingsFetchType,
 } from "./api/bookingsApiService";
 
-import { useGetAllRoomsQuery } from "../rooms/api/roomsApiSlice";
+import { useLazyGetRoomsByAvailabilityQuery } from "../rooms/api/roomsApiService";
 
 import { Button } from "../../common/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../../common/ui/hover-card"
@@ -221,10 +220,14 @@ export const Bookings = () => {
     skip: !token,
   });
 
-  const {
-    data: roomsData,
-    refetch: refetchRooms,
-  } = useGetAllRoomsQuery();
+  const [
+    getRoomsByAvailability, 
+    {
+      data: roomsData,
+      isFetching,
+      error: roomsAvailablilityError,
+    }
+  ] = useLazyGetRoomsByAvailabilityQuery();
 
   const [postData, { isLoading: isPosting }] =
     usePostUserBookingMutation();
@@ -405,11 +408,12 @@ export const Bookings = () => {
                 </Button>
             </ButtonGroup>
             <Button
-              onClick={() => {
-                refetchRooms();
-                addBookingForm.setFieldValue("booking_date", new Date().toISOString().split("T")[0])
-                addBookingForm.setFieldValue("start_time", format(new Date(), "HH:mm"))
-                addBookingForm.setFieldValue("end_time", format(addHours(new Date(), 1), "HH:mm"))
+              onClick={async () => {
+                const dateToday = new Date()
+                await getRoomsByAvailability({date: format(dateToday,"yyyy-MM-dd"), start_time: format(dateToday,"HH:mm:ss"), end_time: format(addHours(dateToday,1), "HH:mm:ss")})
+                addBookingForm.setFieldValue("booking_date", dateToday.toISOString().split("T")[0])
+                addBookingForm.setFieldValue("start_time", format(dateToday, "HH:mm"))
+                addBookingForm.setFieldValue("end_time", format(addHours(dateToday, 1), "HH:mm"))
                 setIsAddBookingOpen(true);
               }}
             >
@@ -501,7 +505,7 @@ export const Bookings = () => {
                             <div
                             key={day.toISOString()}
                             className="relative border-r"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               //selected date and time fetching logic
                               const rect = e.currentTarget.getBoundingClientRect();
                               const y = e.clientY - rect.top;
@@ -510,7 +514,7 @@ export const Bookings = () => {
                               const result = format(addHours(date, val), "yyyy-MM-dd'T'HH:mm");
 
                               //opening dialog and setting default values
-                              refetchRooms();
+                              await getRoomsByAvailability({date: format(result,"yyyy-MM-dd"), start_time: format(result,"HH:mm:ss"), end_time: format(addHours(result,1), "HH:mm:ss")});
                               addBookingForm.setFieldValue("booking_date", result.split("T")[0])
                               addBookingForm.setFieldValue("start_time", format(result, "HH:mm"))
                               addBookingForm.setFieldValue("end_time", format(addHours(result, 1), "HH:mm"))
@@ -834,10 +838,10 @@ export const Bookings = () => {
                       </FieldLabel>
                       <Select
                         items={rooms
-                          .filter((room) => room.is_active)
+                          .filter((room) => room.room_is_active)
                           .map((room) => ({
-                            label: room.name,
-                            value: room.id.toString(),
+                            label: room.room_name,
+                            value: room.room_id.toString(),
                           }))}
                         value={
                           field.state.value
@@ -859,13 +863,13 @@ export const Bookings = () => {
                           <SelectLabel>Available rooms</SelectLabel>
 
                           {rooms
-                            .filter((room) => room.is_active)
                             .map((room) => (
                               <SelectItem
-                                key={room.id}
-                                value={room.id.toString()}
+                                key={room.room_id}
+                                value={room.room_id.toString()}
+                                disabled={!room.room_is_active || room.room_availability === "unavailable" ? true : false}
                               >
-                                {room.name}
+                                {room.room_name}
                               </SelectItem>
                             ))}
                         </SelectGroup>
